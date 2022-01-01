@@ -70,7 +70,7 @@ public class GwtScreen extends AbstractScreen {
         label.setFontScale(1.5f);
         label.setTouchable(Touchable.disabled);
         label.setAlignment(Align.center);
-        label.setPosition(60, 35);
+        label.setPosition(60, 40);
 
         stage.addActor(label);
     }
