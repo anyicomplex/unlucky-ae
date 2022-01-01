@@ -1,6 +1,7 @@
 package com.anyicomplex.unlucky.lwjgl3;
 
-import com.anyicomplex.unlucky.util.OpenURIHandler;
+import com.anyicomplex.unlucky.Unlucky;
+import com.anyicomplex.unlucky.util.PlatformSupport;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.utils.SharedLibraryLoader;
 
@@ -8,10 +9,16 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-public class Lwjgl3OpenURIHandler implements OpenURIHandler {
+public class Lwjgl3PlatformSupport extends PlatformSupport {
+
+    private final Unlucky game;
+
+    public Lwjgl3PlatformSupport(Unlucky game) {
+        this.game = game;
+    }
 
     @Override
-    public void from(String uri) {
+    public void openURIFromString(String uri) {
         if (uri == null) throw new NullPointerException("Uri cannot be null.");
         try {
             new URI(uri);
@@ -31,6 +38,23 @@ public class Lwjgl3OpenURIHandler implements OpenURIHandler {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public void fullscreenMode() {
+        Gdx.graphics.setFullscreenMode(Gdx.graphics.getDisplayMode());
+        game.setCustomCursor();
+    }
+
+    @Override
+    public void windowedMode() {
+        Gdx.graphics.setWindowedMode(game.player.settings.width, game.player.settings.height);
+        game.setSystemCursor();
+    }
+
+    @Override
+    public boolean isFullscreenMode() {
+        return Gdx.graphics.isFullscreen();
     }
 
 }

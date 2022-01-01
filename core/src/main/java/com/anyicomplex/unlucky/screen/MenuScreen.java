@@ -44,6 +44,7 @@ package com.anyicomplex.unlucky.screen;
 import com.anyicomplex.unlucky.Unlucky;
 import com.anyicomplex.unlucky.effects.Moving;
 import com.anyicomplex.unlucky.resource.ResourceManager;
+import com.anyicomplex.unlucky.util.PlatformSupport;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
@@ -340,7 +341,7 @@ public class MenuScreen extends MenuExtensionScreen {
         github.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                Gdx.net.openURI(Unlucky.GITHUB);
+                PlatformSupport.openURI(Unlucky.GITHUB);
             }
         });
 
@@ -350,7 +351,7 @@ public class MenuScreen extends MenuExtensionScreen {
         youtube.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                Gdx.net.openURI(Unlucky.YOUTUBE);
+                PlatformSupport.openURI(Unlucky.YOUTUBE);
             }
         });
 
@@ -367,7 +368,7 @@ public class MenuScreen extends MenuExtensionScreen {
         github2.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                Gdx.net.openURI(Unlucky.GITHUB2);
+                PlatformSupport.openURI(Unlucky.GITHUB2);
             }
         });
 
@@ -385,9 +386,9 @@ public class MenuScreen extends MenuExtensionScreen {
             creditsIcons[i].addListener(new ClickListener() {
                 @Override
                 public void clicked(InputEvent event, float x, float y) {
-                    if (index == 1) Gdx.net.openURI(Unlucky.GITHUB);
-                    if (index == 2) Gdx.net.openURI(Unlucky.GITHUB2);
-                    else Gdx.net.openURI(Unlucky.YOUTUBE);
+                    if (index == 1) PlatformSupport.openURI(Unlucky.GITHUB);
+                    if (index == 2) PlatformSupport.openURI(Unlucky.GITHUB2);
+                    else PlatformSupport.openURI(Unlucky.YOUTUBE);
                 }
             });
             credits.addActor(creditsIcons[i]);

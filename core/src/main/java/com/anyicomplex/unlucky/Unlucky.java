@@ -50,6 +50,7 @@ import com.anyicomplex.unlucky.screen.*;
 import com.anyicomplex.unlucky.screen.game.VictoryScreen;
 import com.anyicomplex.unlucky.ui.inventory.InventoryUI;
 import com.anyicomplex.unlucky.util.Disposer;
+import com.anyicomplex.unlucky.util.PlatformSupport;
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
@@ -195,13 +196,11 @@ public class Unlucky extends Game {
     }
 
     public void fullscreen() {
-        Gdx.graphics.setFullscreenMode(Gdx.graphics.getDisplayMode());
-        setCustomCursor();
+        PlatformSupport.fullscreen();
     }
 
-    public void windowedMode() {
-        Gdx.graphics.setWindowedMode(player.settings.width, player.settings.height);
-        setSystemCursor();
+    public void windowed() {
+        PlatformSupport.windowed();
     }
 
 	public void render() {
@@ -219,9 +218,13 @@ public class Unlucky extends Game {
 
 	}
 
+    public boolean isFullscreen() {
+        return PlatformSupport.isFullscreen();
+    }
+
     @Override
     public void resize(int width, int height) {
-        if (!Unlucky.DISABLE_FULLSCREEN) player.settings.fullscreen = Gdx.graphics.isFullscreen();
+        if (!Unlucky.DISABLE_FULLSCREEN) player.settings.fullscreen = isFullscreen();
         super.resize(width, height);
         if (getScreen() != settingsScreen) settingsScreen.resize(width, height);
     }

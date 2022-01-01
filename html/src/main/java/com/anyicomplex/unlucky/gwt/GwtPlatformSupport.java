@@ -39,32 +39,40 @@
  *   SOFTWARE.
  */
 
-package com.anyicomplex.unlucky.util;
+package com.anyicomplex.unlucky.gwt;
 
+import com.anyicomplex.unlucky.Unlucky;
+import com.anyicomplex.unlucky.util.PlatformSupport;
 import com.badlogic.gdx.Gdx;
 
-/**
- * Simple utility class that opens uri using system's default browser.
- */
-public class OpenURI {
+public class GwtPlatformSupport extends PlatformSupport {
 
-    private volatile static OpenURIHandler handler;
+    private final Unlucky game;
 
-    public static void setHandler(OpenURIHandler handler) {
-        OpenURI.handler = handler;
+    public GwtPlatformSupport(Unlucky game) {
+        this.game = game;
     }
 
-    public static OpenURIHandler getHandler() {
-        return handler;
+    @Override
+    public void openURIFromString(String uri) {
+        Gdx.net.openURI(uri);
     }
 
-    /**
-     * Opens uri using system's default browser depends on uri string.
-     * @param uri uri string
-     */
-    public static void fromString(String uri) {
-        if (handler != null) handler.from(uri);
-        else Gdx.net.openURI(uri);
+    @Override
+    public void fullscreenMode() {
+        Gdx.graphics.setFullscreenMode(Gdx.graphics.getDisplayMode());
+        game.setCustomCursor();
+    }
+
+    @Override
+    public void windowedMode() {
+        Gdx.graphics.setWindowedMode(game.player.settings.width, game.player.settings.height);
+        game.setSystemCursor();
+    }
+
+    @Override
+    public boolean isFullscreenMode() {
+        return Gdx.graphics.isFullscreen();
     }
 
 }

@@ -91,7 +91,7 @@ public class Save {
         // load player data
         psave.load(player);
         // write data to save json
-        if (Gdx.app.getType() == Application.ApplicationType.WebGL) {
+        if (Gdx.app.getType() == Application.ApplicationType.WebGL || Gdx.app.getType() == Application.ApplicationType.Android) {
             Preferences wrapper = Gdx.app.getPreferences(fileName);
             wrapper.putString(fileName, Base64Coder.encodeString(json.prettyPrint(psave)));
             wrapper.flush();
@@ -105,7 +105,7 @@ public class Save {
      * loads the data into the game through the player
      */
     public void load(ResourceManager rm) {
-        if (Gdx.app.getType() == Application.ApplicationType.WebGL) {
+        if (Gdx.app.getType() == Application.ApplicationType.WebGL || Gdx.app.getType() == Application.ApplicationType.Android) {
             Preferences wrapper = Gdx.app.getPreferences(fileName);
             String jsonString = wrapper.getString(fileName, "NODATA");
             if (jsonString.equals("NODATA")) save();

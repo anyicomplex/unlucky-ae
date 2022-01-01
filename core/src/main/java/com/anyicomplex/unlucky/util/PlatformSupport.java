@@ -41,8 +41,40 @@
 
 package com.anyicomplex.unlucky.util;
 
-public interface OpenURIHandler {
+public abstract class PlatformSupport {
 
-    void from(String uri);
+    private static volatile PlatformSupport handler;
+
+    public static PlatformSupport getHandler() {
+        return handler;
+    }
+
+    public static void setHandler(PlatformSupport handler) {
+        PlatformSupport.handler = handler;
+    }
+
+    public static void openURI(String uri) {
+        handler.openURIFromString(uri);
+    }
+
+    public static void fullscreen() {
+        handler.fullscreenMode();
+    }
+
+    public static void windowed() {
+        handler.windowedMode();
+    }
+
+    public static boolean isFullscreen() {
+        return handler.isFullscreenMode();
+    }
+
+    public abstract void openURIFromString(String uri);
+
+    public abstract void fullscreenMode();
+
+    public abstract void windowedMode();
+
+    public abstract boolean isFullscreenMode();
 
 }

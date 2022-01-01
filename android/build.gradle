@@ -31,15 +31,15 @@ android {
 	}
 	defaultConfig {
 		applicationId 'com.anyicomplex.unlucky'
-		minSdkVersion 19
+		minSdkVersion 16
 		targetSdkVersion 31
-		versionCode 1
-		versionName "1.0"
+		versionCode appVersionCode
+		versionName appVersion
 		multiDexEnabled true
 	}
 	compileOptions {
-		sourceCompatibility "1.8"
-		targetCompatibility "1.8"
+		sourceCompatibility appSourceCompatibility
+		targetCompatibility appSourceCompatibility
 		coreLibraryDesugaringEnabled true
 	}
 	

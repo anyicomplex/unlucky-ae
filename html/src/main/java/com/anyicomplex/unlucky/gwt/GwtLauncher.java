@@ -42,7 +42,7 @@
 package com.anyicomplex.unlucky.gwt;
 
 import com.anyicomplex.unlucky.Unlucky;
-import com.anyicomplex.unlucky.util.OpenURI;
+import com.anyicomplex.unlucky.util.PlatformSupport;
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.backends.gwt.GwtApplication;
 import com.badlogic.gdx.backends.gwt.GwtApplicationConfiguration;
@@ -66,7 +66,6 @@ public class GwtLauncher extends GwtApplication {
 
 		@Override
 		public ApplicationListener createApplicationListener () {
-			OpenURI.setHandler(new GwtOpenURIHandler());
 			Unlucky.DISABLE_PAD = !GwtApplication.isMobileDevice();
 			Unlucky.DISABLE_CURSOR = GwtApplication.isMobileDevice();
 			Unlucky.DISABLE_FULLSCREEN = false;
@@ -77,7 +76,9 @@ public class GwtLauncher extends GwtApplication {
 			if (Unlucky.VERSION_CODE < 10) Unlucky.VERSION_CODE_STRING = "00" + Unlucky.VERSION_CODE;
 			else if (Unlucky.VERSION_CODE < 100) Unlucky.VERSION_CODE_STRING = "0" + Unlucky.VERSION_CODE;
 			Unlucky.TITLE = Unlucky.APP_NAME + " v" + Unlucky.VERSION + " [Build " + Unlucky.VERSION_CODE_STRING + "]";
-			return new Unlucky();
+			Unlucky unlucky = new Unlucky();
+			PlatformSupport.setHandler(new GwtPlatformSupport(unlucky));
+			return unlucky;
 		}
 
 }

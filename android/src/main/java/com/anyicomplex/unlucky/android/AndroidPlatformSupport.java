@@ -39,20 +39,47 @@
  *   SOFTWARE.
  */
 
-package com.anyicomplex.unlucky.gwt;
+package com.anyicomplex.unlucky.android;
 
-import com.anyicomplex.unlucky.util.OpenURIHandler;
+import com.anyicomplex.unlucky.util.PlatformSupport;
+import com.badlogic.gdx.Gdx;
 
-public class GwtOpenURIHandler implements OpenURIHandler {
+public class AndroidPlatformSupport extends PlatformSupport {
 
-    @Override
-    public void from(String uri) {
-        nOpenURL(uri);
+    private final AndroidLauncher androidLauncher;
+
+    public AndroidPlatformSupport(AndroidLauncher androidLauncher) {
+        this.androidLauncher = androidLauncher;
     }
 
-    private native void nOpenURL(String url) /*-{
-        var jsUrl = url;
-        $wnd.location.href = jsUrl;
-    }-*/;
+    @Override
+    public void openURIFromString(String uri) {
+        Gdx.net.openURI(uri);
+    }
+
+    @Override
+    public void fullscreenMode() {
+        androidLauncher.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                androidLauncher.updateImmersiveMode();
+            }
+        });
+    }
+
+    @Override
+    public void windowedMode() {
+        androidLauncher.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                androidLauncher.updateImmersiveMode();
+            }
+        });
+    }
+
+    @Override
+    public boolean isFullscreenMode() {
+        return androidLauncher.settings.fullscreen;
+    }
 
 }

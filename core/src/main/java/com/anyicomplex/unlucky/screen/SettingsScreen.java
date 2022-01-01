@@ -43,6 +43,7 @@ package com.anyicomplex.unlucky.screen;
 
 import com.anyicomplex.unlucky.Unlucky;
 import com.anyicomplex.unlucky.resource.ResourceManager;
+import com.anyicomplex.unlucky.util.PlatformSupport;
 import com.badlogic.gdx.*;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
@@ -229,7 +230,7 @@ public class SettingsScreen extends MenuExtensionScreen {
         showEnemyLevels.setChecked(game.player.settings.showEnemyLevels);
         showWeatherAnims.setChecked(game.player.settings.showWeatherAnimations);
         showFps.setChecked(game.player.settings.showFps);
-        fullscreen.setChecked(Gdx.graphics.isFullscreen());
+        fullscreen.setChecked(PlatformSupport.isFullscreen());
 
         // checkbox events
         muteMusic.addListener(new ChangeListener() {
@@ -288,7 +289,7 @@ public class SettingsScreen extends MenuExtensionScreen {
                 fullscreenClicked = true;
                 game.player.settings.fullscreen = fullscreen.isChecked();
                 if (game.player.settings.fullscreen) game.fullscreen();
-                else game.windowedMode();
+                else game.windowed();
                 if (!inGame) game.save.save();
             }
         });

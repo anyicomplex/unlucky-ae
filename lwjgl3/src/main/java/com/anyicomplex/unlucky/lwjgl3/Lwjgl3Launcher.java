@@ -3,7 +3,7 @@ package com.anyicomplex.unlucky.lwjgl3;
 import com.anyicomplex.unlucky.Unlucky;
 import com.anyicomplex.unlucky.save.PlayerAccessor;
 import com.anyicomplex.unlucky.save.Settings;
-import com.anyicomplex.unlucky.util.OpenURI;
+import com.anyicomplex.unlucky.util.PlatformSupport;
 import com.badlogic.gdx.Files;
 import com.badlogic.gdx.backends.lwjgl3.*;
 import com.badlogic.gdx.utils.Base64Coder;
@@ -24,8 +24,6 @@ public class Lwjgl3Launcher {
 	private static Lwjgl3Application createApplication() {
 
 		SingleInstanceLock.exitIfOtherInstancesRunning(Lwjgl3Launcher.class.getCanonicalName());
-
-		OpenURI.setHandler(new Lwjgl3OpenURIHandler());
 
 		Unlucky.APP_NAME = Lwjgl3Launcher.class.getPackage().getSpecificationTitle();
 		Unlucky.VERSION = Lwjgl3Launcher.class.getPackage().getSpecificationVersion();
@@ -77,6 +75,7 @@ public class Lwjgl3Launcher {
 				"icons/icon64.png", "icons/icon16.png");
 
 		Unlucky unlucky = new Unlucky();
+		PlatformSupport.setHandler(new Lwjgl3PlatformSupport(unlucky));
 
 		Settings settings;
 		try {
