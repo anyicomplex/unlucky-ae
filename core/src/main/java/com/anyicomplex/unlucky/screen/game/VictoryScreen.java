@@ -1,6 +1,55 @@
+/*
+ *   Copyright (C) 2021 Yi An
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   This program is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU General Public License for more details.
+ *
+ *   You should have received a copy of the GNU General Public License
+ *   along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ *   Original project's License:
+ *
+ *   MIT License
+ *
+ *   Copyright (c) 2018 Ming Li
+ *
+ *   Permission is hereby granted, free of charge, to any person obtaining a copy
+ *   of this software and associated documentation files (the "Software"), to deal
+ *   in the Software without restriction, including without limitation the rights
+ *   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ *   copies of the Software, and to permit persons to whom the Software is
+ *   furnished to do so, subject to the following conditions:
+ *
+ *   The above copyright notice and this permission notice shall be included in all
+ *   copies or substantial portions of the Software.
+ *
+ *   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ *   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ *   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ *   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ *   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ *   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ *   SOFTWARE.
+ */
+
 package com.anyicomplex.unlucky.screen.game;
 
+import com.anyicomplex.unlucky.Unlucky;
+import com.anyicomplex.unlucky.inventory.Item;
+import com.anyicomplex.unlucky.map.GameMap;
+import com.anyicomplex.unlucky.resource.ResourceManager;
+import com.anyicomplex.unlucky.screen.AbstractScreen;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
+import com.badlogic.gdx.InputAdapter;
+import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
@@ -11,11 +60,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
-import com.anyicomplex.unlucky.inventory.Item;
-import com.anyicomplex.unlucky.Unlucky;
-import com.anyicomplex.unlucky.map.GameMap;
-import com.anyicomplex.unlucky.resource.ResourceManager;
-import com.anyicomplex.unlucky.screen.AbstractScreen;
 
 /**
  * The screen that appears after the player successfully completes a level
@@ -48,13 +92,13 @@ public class VictoryScreen extends AbstractScreen {
 
         bannerBg = new Image(rm.skin, "default-slider");
         bannerBg.setSize(120, 18);
-        bannerBg.setPosition(Unlucky.V_WIDTH / 2 - 70, 96);
+        bannerBg.setPosition(Unlucky.V_WIDTH / 2.0f - 70, 96);
         stage.addActor(bannerBg);
 
         bannerText = new Label("VICTORY", new Label.LabelStyle(rm.pixel10, new Color(0, 215 / 255.f, 0, 1)));
         bannerText.setFontScale(1.5f);
         bannerText.setSize(120, 18);
-        bannerText.setPosition(Unlucky.V_WIDTH / 2 - 70, 96);
+        bannerText.setPosition(Unlucky.V_WIDTH / 2.0f - 70, 96);
         bannerText.setAlignment(Align.center);
         stage.addActor(bannerText);
 
@@ -77,7 +121,7 @@ public class VictoryScreen extends AbstractScreen {
 
         infoBg = new Image(rm.skin, "default-slider");
         infoBg.setSize(120, 88);
-        infoBg.setPosition(Unlucky.V_WIDTH / 2 - 70, 4);
+        infoBg.setPosition(Unlucky.V_WIDTH / 2.0f - 70, 4);
         stage.addActor(infoBg);
 
         info = new Label("", new Label.LabelStyle(rm.pixel10, Color.WHITE));
@@ -85,7 +129,7 @@ public class VictoryScreen extends AbstractScreen {
         info.setWrap(true);
         info.setAlignment(Align.topLeft);
         info.setSize(112, 50);
-        info.setPosition(Unlucky.V_WIDTH / 2 - 70 + 4, 38);
+        info.setPosition(Unlucky.V_WIDTH / 2.0f - 70 + 4, 38);
         stage.addActor(info);
 
         ImageButton.ImageButtonStyle nextStyle = new ImageButton.ImageButtonStyle();
@@ -124,6 +168,10 @@ public class VictoryScreen extends AbstractScreen {
 
     @Override
     public void show() {
+
+        nextButton.setVisible(gameMap.levelIndex != rm.worlds.get(gameMap.worldIndex).numLevels - 1);
+        nextLabel.setVisible(gameMap.levelIndex != rm.worlds.get(gameMap.worldIndex).numLevels - 1);
+
         game.fps.setPosition(5, 115);
         stage.addActor(game.fps);
 
@@ -142,7 +190,7 @@ public class VictoryScreen extends AbstractScreen {
 
         String infoText = rm.worlds.get(gameMap.worldIndex).name + ": " +
             rm.worlds.get(gameMap.worldIndex).levels[gameMap.levelIndex].name + " completed!\n\n" +
-            "Time: " + gameMap.time + " seconds\n\n" +
+            "Time: " + Math.round(gameMap.time) + " seconds\n\n" +
             "Total gold obtained: " + gameMap.goldObtained + "\n" +
             "Total experience obtained: " + gameMap.expObtained + "\n\n" +
             "Items obtained: ";
@@ -154,9 +202,39 @@ public class VictoryScreen extends AbstractScreen {
             int y = i / NUM_COLS;
             Item item = gameMap.itemsObtained.get(i);
             item.actor.remove();
-            item.actor.setPosition(Unlucky.V_WIDTH / 2 - 70 + 8 + (x * 24), 34 - (y * 16));
+            item.actor.setPosition(Unlucky.V_WIDTH / 2.0f - 70 + 8 + (x * 24), 34 - (y * 16));
             stage.addActor(item.actor);
         }
+
+        InputMultiplexer multiplexer = new InputMultiplexer();
+        multiplexer.addProcessor(stage);
+        multiplexer.addProcessor(new InputAdapter() {
+            @Override
+            public boolean keyDown(int keycode) {
+                if (!clickable) return super.keyDown(keycode);
+                switch (keycode) {
+                    case Input.Keys.ENTER:
+                    case Input.Keys.NUMPAD_ENTER:
+                        if (gameMap.levelIndex != rm.worlds.get(gameMap.worldIndex).numLevels - 1) {
+                            // switch back to level select screen
+                            for (Item item : gameMap.itemsObtained) item.actor.remove();
+                            game.levelSelectScreen.setWorld(gameMap.worldIndex);
+                            rm.menuTheme.play();
+                            Gdx.input.setInputProcessor(stage);
+                            setFadeScreen(game.levelSelectScreen);
+                        }
+                        return true;
+                    case Input.Keys.ESCAPE:
+                        for (Item item : gameMap.itemsObtained) item.actor.remove();
+                        game.menuScreen.transitionIn = 0;
+                        Gdx.input.setInputProcessor(stage);
+                        setFadeScreen(game.menuScreen);
+                        return true;
+                }
+                return super.keyDown(keycode);
+            }
+        });
+        Gdx.input.setInputProcessor(multiplexer);
     }
 
     public void update(float dt) {}
@@ -173,7 +251,7 @@ public class VictoryScreen extends AbstractScreen {
 
             // render world background corresponding to the selected world
             //stage.getBatch().draw(rm.worldSelectBackgrounds[gameMap.worldIndex], 0, 0);
-            stage.getBatch().draw(rm.worldSelectBackgrounds[0], 0, 0);
+            stage.getBatch().draw(rm.worldSelectBackgrounds[gameMap.worldIndex], 0, 0);
 
             stage.getBatch().end();
         }

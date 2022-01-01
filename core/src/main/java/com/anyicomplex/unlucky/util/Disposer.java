@@ -39,21 +39,17 @@
  *   SOFTWARE.
  */
 
-package com.anyicomplex.unlucky.event;
+package com.anyicomplex.unlucky.util;
 
-/**
- * Different states for events such as walking, battling, picking up items
- *
- * @author Ming Li
- */
-public enum EventState {
-    NONE,
-    MOVING,
-    BATTLING,
-    TRANSITION,
-    LEVEL_UP,
-    INVENTORY,
-    TILE_EVENT,
-    DEATH,
-    PAUSE
+import com.badlogic.gdx.utils.Disposable;
+
+public class Disposer {
+
+    public static void dispose(Disposable... disposables) {
+        if (disposables == null) return;
+        for (Disposable disposable : disposables) {
+            if (disposable != null) disposable.dispose();
+        }
+    }
+
 }

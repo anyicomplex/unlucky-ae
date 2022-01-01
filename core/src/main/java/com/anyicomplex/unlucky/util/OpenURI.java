@@ -39,21 +39,32 @@
  *   SOFTWARE.
  */
 
-package com.anyicomplex.unlucky.event;
+package com.anyicomplex.unlucky.util;
+
+import com.badlogic.gdx.Gdx;
 
 /**
- * Different states for events such as walking, battling, picking up items
- *
- * @author Ming Li
+ * Simple utility class that opens uri using system's default browser.
  */
-public enum EventState {
-    NONE,
-    MOVING,
-    BATTLING,
-    TRANSITION,
-    LEVEL_UP,
-    INVENTORY,
-    TILE_EVENT,
-    DEATH,
-    PAUSE
+public class OpenURI {
+
+    private volatile static OpenURIHandler handler;
+
+    public static void setHandler(OpenURIHandler handler) {
+        OpenURI.handler = handler;
+    }
+
+    public static OpenURIHandler getHandler() {
+        return handler;
+    }
+
+    /**
+     * Opens uri using system's default browser depends on uri string.
+     * @param uri uri string
+     */
+    public static void fromString(String uri) {
+        if (handler != null) handler.from(uri);
+        else Gdx.net.openURI(uri);
+    }
+
 }

@@ -1,10 +1,47 @@
+/*
+ *   Copyright (C) 2021 Yi An
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   This program is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU General Public License for more details.
+ *
+ *   You should have received a copy of the GNU General Public License
+ *   along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ *   Original project's License:
+ *
+ *   MIT License
+ *
+ *   Copyright (c) 2018 Ming Li
+ *
+ *   Permission is hereby granted, free of charge, to any person obtaining a copy
+ *   of this software and associated documentation files (the "Software"), to deal
+ *   in the Software without restriction, including without limitation the rights
+ *   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ *   copies of the Software, and to permit persons to whom the Software is
+ *   furnished to do so, subject to the following conditions:
+ *
+ *   The above copyright notice and this permission notice shall be included in all
+ *   copies or substantial portions of the Software.
+ *
+ *   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ *   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ *   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ *   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ *   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ *   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ *   SOFTWARE.
+ */
+
 package com.anyicomplex.unlucky.save;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.files.FileHandle;
-import com.badlogic.gdx.utils.Base64Coder;
-import com.badlogic.gdx.utils.Json;
-import com.badlogic.gdx.utils.JsonWriter;
+import com.anyicomplex.unlucky.Unlucky;
 import com.anyicomplex.unlucky.battle.SpecialMoveset;
 import com.anyicomplex.unlucky.entity.Player;
 import com.anyicomplex.unlucky.inventory.Equipment;
@@ -12,6 +49,13 @@ import com.anyicomplex.unlucky.inventory.Inventory;
 import com.anyicomplex.unlucky.inventory.Item;
 import com.anyicomplex.unlucky.inventory.ShopItem;
 import com.anyicomplex.unlucky.resource.ResourceManager;
+import com.badlogic.gdx.Application;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Preferences;
+import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.utils.Base64Coder;
+import com.badlogic.gdx.utils.Json;
+import com.badlogic.gdx.utils.JsonWriter;
 
 /**
  * Handles the reading and writing of save data to json files.
@@ -25,14 +69,18 @@ public class Save {
     public PlayerAccessor psave;
     private Json json;
     private FileHandle file;
+    private String fileName;
 
-    public Save(Player player, String path) {
+    public Save(Player player, String fileName) {
         this.player = player;
         psave = new PlayerAccessor();
         json = new Json();
         json.setOutputType(JsonWriter.OutputType.json);
         json.setUsePrototypes(false);
-        file = Gdx.files.local(path);
+        // file = Gdx.files.local(path);
+        this.fileName = fileName;
+        if (Gdx.app.getType() == Application.ApplicationType.WebGL) return;
+        file = Gdx.files.absolute(Unlucky.STORAGE_ABSOLUTE_PATH + fileName);
     }
 
     /**
@@ -43,6 +91,12 @@ public class Save {
         // load player data
         psave.load(player);
         // write data to save json
+        if (Gdx.app.getType() == Application.ApplicationType.WebGL) {
+            Preferences wrapper = Gdx.app.getPreferences(fileName);
+            wrapper.putString(fileName, Base64Coder.encodeString(json.prettyPrint(psave)));
+            wrapper.flush();
+            return;
+        }
         file.writeString(Base64Coder.encodeString(json.prettyPrint(psave)), false);
     }
 
@@ -51,8 +105,26 @@ public class Save {
      * loads the data into the game through the player
      */
     public void load(ResourceManager rm) {
-        if (!file.exists()) save();
-        psave = json.fromJson(PlayerAccessor.class, Base64Coder.decodeString(file.readString()));
+        if (Gdx.app.getType() == Application.ApplicationType.WebGL) {
+            Preferences wrapper = Gdx.app.getPreferences(fileName);
+            String jsonString = wrapper.getString(fileName, "NODATA");
+            if (jsonString.equals("NODATA")) save();
+            try {
+                psave = json.fromJson(PlayerAccessor.class, Base64Coder.decodeString(jsonString));
+            }
+            catch (Exception ignored) {
+                return;
+            }
+        }
+        else {
+            if (!file.exists()) save();
+            try {
+                psave = json.fromJson(PlayerAccessor.class, Base64Coder.decodeString(file.readString()));
+            }
+            catch (Exception ignored) {
+                return;
+            }
+        }
 
         // load atomic fields
         player.setHp(psave.hp);

@@ -1,14 +1,46 @@
+/*
+ *   Copyright (C) 2021 Yi An
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   This program is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU General Public License for more details.
+ *
+ *   You should have received a copy of the GNU General Public License
+ *   along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ *   Original project's License:
+ *
+ *   MIT License
+ *
+ *   Copyright (c) 2018 Ming Li
+ *
+ *   Permission is hereby granted, free of charge, to any person obtaining a copy
+ *   of this software and associated documentation files (the "Software"), to deal
+ *   in the Software without restriction, including without limitation the rights
+ *   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ *   copies of the Software, and to permit persons to whom the Software is
+ *   furnished to do so, subject to the following conditions:
+ *
+ *   The above copyright notice and this permission notice shall be included in all
+ *   copies or substantial portions of the Software.
+ *
+ *   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ *   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ *   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ *   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ *   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ *   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ *   SOFTWARE.
+ */
+
 package com.anyicomplex.unlucky.ui.battleui;
 
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.Touchable;
-import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.anyicomplex.unlucky.animation.AnimationManager;
 import com.anyicomplex.unlucky.effects.Moving;
 import com.anyicomplex.unlucky.effects.Particle;
@@ -22,6 +54,15 @@ import com.anyicomplex.unlucky.resource.ResourceManager;
 import com.anyicomplex.unlucky.resource.Util;
 import com.anyicomplex.unlucky.screen.GameScreen;
 import com.anyicomplex.unlucky.ui.MovingImageUI;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.Touchable;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
 
 /**
  * Displays health bars, battle animations, move animations, etc.
@@ -152,7 +193,7 @@ public class BattleScene extends BattleUI {
                 else if (diff == -1 || diff == -2) enemyHudLabel.setStyle(weaker);
                 else if (diff == 0) enemyHudLabel.setStyle(same);
                 else if (diff == 1 || diff == 2) enemyHudLabel.setStyle(stronger);
-                else if (diff >= 3) enemyHudLabel.setStyle(strongest);
+                else enemyHudLabel.setStyle(strongest);
             }
             enemyHudLabel.setText(battle.opponent.getId());
         }
@@ -209,13 +250,11 @@ public class BattleScene extends BattleUI {
 
         // when enemy dies, its sprite falls off the screen
         if (player.isDead()) {
-            float dy = playerSprite.position.y - 2;
-            playerSprite.position.y = dy;
+            playerSprite.position.y = playerSprite.position.y - 2;
             if (playerSprite.position.y < -48) playerSprite.position.y = -48;
         }
         if (battle.opponent.isDead()) {
-            float dy = enemySprite.position.y - 2;
-            enemySprite.position.y = dy;
+            enemySprite.position.y = enemySprite.position.y - 2;
             if (enemySprite.position.y < -48) enemySprite.position.y = -48;
         }
 
@@ -305,7 +344,7 @@ public class BattleScene extends BattleUI {
             }
         }
         // heal
-        else if (entity.getMoveUsed() == 3 && entity.getMoveUsed() >= 0) {
+        else if (entity.getMoveUsed() == 3) {
             if (healAnim.currentAnimation.isAnimationFinished()) {
                 sfxPlaying = false;
                 healAnim.currentAnimation.stop();
@@ -328,7 +367,7 @@ public class BattleScene extends BattleUI {
         if (renderEnemy) {
             TextureRegion r = battle.opponent.getBam().getKeyFrame(true);
             if (battle.opponent.isBoss()) {
-                gameScreen.getBatch().draw(r, enemySprite.position.x + (48 - battle.opponent.battleSize) / 2, enemySprite.position.y,
+                gameScreen.getBatch().draw(r, enemySprite.position.x + (48 - battle.opponent.battleSize) / 2.0f, enemySprite.position.y,
                         battle.opponent.battleSize, battle.opponent.battleSize);
             }
             else {

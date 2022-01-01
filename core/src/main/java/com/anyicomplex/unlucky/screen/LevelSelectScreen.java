@@ -1,5 +1,53 @@
+/*
+ *   Copyright (C) 2021 Yi An
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   This program is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU General Public License for more details.
+ *
+ *   You should have received a copy of the GNU General Public License
+ *   along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ *   Original project's License:
+ *
+ *   MIT License
+ *
+ *   Copyright (c) 2018 Ming Li
+ *
+ *   Permission is hereby granted, free of charge, to any person obtaining a copy
+ *   of this software and associated documentation files (the "Software"), to deal
+ *   in the Software without restriction, including without limitation the rights
+ *   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ *   copies of the Software, and to permit persons to whom the Software is
+ *   furnished to do so, subject to the following conditions:
+ *
+ *   The above copyright notice and this permission notice shall be included in all
+ *   copies or substantial portions of the Software.
+ *
+ *   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ *   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ *   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ *   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ *   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ *   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ *   SOFTWARE.
+ */
+
 package com.anyicomplex.unlucky.screen;
 
+import com.anyicomplex.unlucky.Unlucky;
+import com.anyicomplex.unlucky.map.Level;
+import com.anyicomplex.unlucky.resource.ResourceManager;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
+import com.badlogic.gdx.InputAdapter;
+import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -9,9 +57,6 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Array;
-import com.anyicomplex.unlucky.Unlucky;
-import com.anyicomplex.unlucky.map.Level;
-import com.anyicomplex.unlucky.resource.ResourceManager;
 
 /**
  * Allows the player to select a level from a world
@@ -79,10 +124,64 @@ public class LevelSelectScreen extends SelectScreen {
 
         scrollTable.remove();
         createScrollPane();
+        stage.setScrollFocus(scrollPane);
 
         // automatically scroll to the position of the currently selected world button
-        float r = (float) currentLevelIndex / (numLevels - 1);
-        scrollPane.setScrollPercentY(r);
+        scrollPane.setScrollY(currentLevelIndex * 24);
+
+        InputMultiplexer multiplexer = new InputMultiplexer();
+        multiplexer.addProcessor(stage);
+        multiplexer.addProcessor(new InputAdapter() {
+            @Override
+            public boolean keyDown(int keycode) {
+                if (!clickable) return super.keyDown(keycode);
+                switch (keycode) {
+                    case Input.Keys.ESCAPE:
+                    if (!game.player.settings.muteSfx) rm.buttonclick0.play(game.player.settings.sfxVolume);
+                    game.menuScreen.transitionIn = 0;
+                    setFadeScreen(game.worldSelectScreen);
+                    Gdx.input.setInputProcessor(stage);
+                    return true;
+                    case Input.Keys.ENTER:
+                    case Input.Keys.NUMPAD_ENTER:
+                        performEnter();
+                        return true;
+                }
+                return super.keyDown(keycode);
+            }
+        });
+        Gdx.input.setInputProcessor(multiplexer);
+    }
+
+    private void performEnter() {
+        if (!game.player.settings.muteSfx) rm.buttonclick0.play(game.player.settings.sfxVolume);
+        if (worldIndex <= game.player.maxWorld) {
+            // if the player's inventory is full give a warning
+            if (game.player.inventory.isFull()) {
+                new Dialog("Warning", rm.dialogSkin) {
+                    {
+                        Label l = new Label("Your inventory is full.\nAre you sure you want to proceed?", rm.dialogSkin);
+                        l.setFontScale(0.5f);
+                        l.setAlignment(Align.center);
+                        text(l);
+                        getButtonTable().defaults().width(40);
+                        getButtonTable().defaults().height(15);
+                        button("Yes", "yes");
+                        button("No", "no");
+                        key(Input.Keys.Y, "yes");
+                        key(Input.Keys.N, "no");
+                    }
+
+                    @Override
+                    protected void result(Object object) {
+                        if (object.equals("yes")) enterGame();
+                    }
+
+                }.show(stage).getTitleLabel().setAlignment(Align.center);
+            } else {
+                enterGame();
+            }
+        }
     }
 
     /**
@@ -105,32 +204,7 @@ public class LevelSelectScreen extends SelectScreen {
         enterButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                if (!game.player.settings.muteSfx) rm.buttonclick0.play(game.player.settings.sfxVolume);
-                if (worldIndex <= game.player.maxWorld) {
-                    // if the player's inventory is full give a warning
-                    if (game.player.inventory.isFull()) {
-                        new Dialog("Warning", rm.dialogSkin) {
-                            {
-                                Label l = new Label("Your inventory is full.\nAre you sure you want to proceed?", rm.dialogSkin);
-                                l.setFontScale(0.5f);
-                                l.setAlignment(Align.center);
-                                text(l);
-                                getButtonTable().defaults().width(40);
-                                getButtonTable().defaults().height(15);
-                                button("Yes", "yes");
-                                button("No", "no");
-                            }
-
-                            @Override
-                            protected void result(Object object) {
-                                if (object.equals("yes")) enterGame();
-                            }
-
-                        }.show(stage).getTitleLabel().setAlignment(Align.center);
-                    } else {
-                        enterGame();
-                    }
-                }
+                performEnter();
             }
         });
     }

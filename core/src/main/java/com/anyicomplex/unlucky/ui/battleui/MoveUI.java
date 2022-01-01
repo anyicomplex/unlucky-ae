@@ -1,8 +1,59 @@
+/*
+ *   Copyright (C) 2021 Yi An
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   This program is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU General Public License for more details.
+ *
+ *   You should have received a copy of the GNU General Public License
+ *   along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ *   Original project's License:
+ *
+ *   MIT License
+ *
+ *   Copyright (c) 2018 Ming Li
+ *
+ *   Permission is hereby granted, free of charge, to any person obtaining a copy
+ *   of this software and associated documentation files (the "Software"), to deal
+ *   in the Software without restriction, including without limitation the rights
+ *   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ *   copies of the Software, and to permit persons to whom the Software is
+ *   furnished to do so, subject to the following conditions:
+ *
+ *   The above copyright notice and this permission notice shall be included in all
+ *   copies or substantial portions of the Software.
+ *
+ *   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ *   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ *   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ *   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ *   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ *   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ *   SOFTWARE.
+ */
+
 package com.anyicomplex.unlucky.ui.battleui;
 
+import com.anyicomplex.unlucky.battle.Move;
+import com.anyicomplex.unlucky.battle.SpecialMove;
+import com.anyicomplex.unlucky.battle.StatusEffect;
+import com.anyicomplex.unlucky.entity.Player;
+import com.anyicomplex.unlucky.event.Battle;
+import com.anyicomplex.unlucky.event.BattleEvent;
+import com.anyicomplex.unlucky.event.BattleState;
+import com.anyicomplex.unlucky.map.TileMap;
+import com.anyicomplex.unlucky.resource.ResourceManager;
+import com.anyicomplex.unlucky.resource.Util;
+import com.anyicomplex.unlucky.screen.GameScreen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
@@ -12,15 +63,6 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Array;
-import com.anyicomplex.unlucky.battle.Move;
-import com.anyicomplex.unlucky.battle.SpecialMove;
-import com.anyicomplex.unlucky.battle.StatusEffect;
-import com.anyicomplex.unlucky.entity.Player;
-import com.anyicomplex.unlucky.event.*;
-import com.anyicomplex.unlucky.map.TileMap;
-import com.anyicomplex.unlucky.resource.ResourceManager;
-import com.anyicomplex.unlucky.resource.Util;
-import com.anyicomplex.unlucky.screen.GameScreen;
 
 /**
  * Creates and handle the random move buttons and two other options in the battle phase
@@ -55,7 +97,7 @@ public class MoveUI extends BattleUI {
     private boolean shouldReset = false;
 
     public MoveUI(GameScreen gameScreen, TileMap tileMap, Player player, Battle battle,
-                  com.anyicomplex.unlucky.ui.battleui.BattleUIHandler uiHandler, Stage stage, ResourceManager rm) {
+                  BattleUIHandler uiHandler, Stage stage, ResourceManager rm) {
         super(gameScreen, tileMap, player, battle, uiHandler, rm);
 
         this.stage = stage;
@@ -81,10 +123,13 @@ public class MoveUI extends BattleUI {
                     "new special move");
         }
 
+        /*
         for (int i = 0; i < playerSmoveset.size; i++) {
             System.out.print(playerSmoveset.get(i).name + ",");
         }
         System.out.println();
+
+         */
     }
 
     public void render(float dt) {}
@@ -296,25 +341,30 @@ public class MoveUI extends BattleUI {
             moveButtons[i].addListener(new ClickListener() {
                 @Override
                 public void clicked(InputEvent event, float x, float y) {
-                    if (!player.settings.muteSfx) rm.moveselectclick.play(player.settings.sfxVolume);
-                    // the move the player clicked
-                    if (onCd) turnCounter++;
-                    // when not on cooldown reset special moves every turn
-                    else {
-                        smove = playerSmoveset.random();
-                        resetSpecialMoves();
-                    }
-                    player.stats.numMovesUsed++;
-                    Move move = player.getMoveset().moveset[index];
-                    uiHandler.currentState = com.anyicomplex.unlucky.event.BattleState.DIALOG;
-                    uiHandler.moveUI.toggleMoveAndOptionUI(false);
-                    // reshuffle moveset for next turn
-                    resetMoves();
-                    String[] dialog = battle.handleMove(move);
-                    uiHandler.battleEventHandler.startDialog(dialog, BattleEvent.PLAYER_TURN, BattleEvent.ENEMY_TURN);
+                    performMove(index);
                 }
             });
         }
+    }
+
+    public void performMove(int index) {
+        if (uiHandler.currentState == BattleState.DIALOG) return;
+        if (!player.settings.muteSfx) rm.moveselectclick.play(player.settings.sfxVolume);
+        // the move the player clicked
+        if (onCd) turnCounter++;
+            // when not on cooldown reset special moves every turn
+        else {
+            smove = playerSmoveset.random();
+            resetSpecialMoves();
+        }
+        player.stats.numMovesUsed++;
+        Move move = player.getMoveset().moveset[index];
+        uiHandler.currentState = BattleState.DIALOG;
+        uiHandler.moveUI.toggleMoveAndOptionUI(false);
+        // reshuffle moveset for next turn
+        resetMoves();
+        String[] dialog = battle.handleMove(move);
+        uiHandler.battleEventHandler.startDialog(dialog, BattleEvent.PLAYER_TURN, BattleEvent.ENEMY_TURN);
     }
 
     /**
@@ -326,39 +376,7 @@ public class MoveUI extends BattleUI {
         optionButtons[0].addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                if (!player.settings.muteSfx) rm.moveselectclick.play(player.settings.sfxVolume);
-                uiHandler.currentState = com.anyicomplex.unlucky.event.BattleState.DIALOG;
-                uiHandler.moveUI.toggleMoveAndOptionUI(false);
-                player.stats.numSMovesUsed++;
-                // remove current smove from pool
-                playerSmoveset.removeValue(smove, false);
-                if (playerSmoveset.size == 0) {
-                    onCd = false;
-                    turnCounter = player.smoveCd;
-                    resetSpecialMoves();
-                }
-                battle.buffs[smove.id] = true;
-
-                uiHandler.battleEventHandler.startDialog(battle.getSpecialMoveDialog(smove.id),
-                        BattleEvent.PLAYER_TURN, BattleEvent.PLAYER_TURN);
-
-                // add status icons that should show immediately after dialog
-                if (battle.buffs[Util.DISTRACT]) battle.opponent.statusEffects.addEffect(StatusEffect.DISTRACT);
-                if (battle.buffs[Util.FOCUS]) player.statusEffects.addEffect(StatusEffect.FOCUS);
-                if (battle.buffs[Util.INTIMIDATE]) player.statusEffects.addEffect(StatusEffect.INTIMIDATE);
-                if (battle.buffs[Util.REFLECT]) battle.opponent.statusEffects.addEffect(StatusEffect.REFLECT);
-                if (battle.buffs[Util.INVERT]) player.statusEffects.addEffect(StatusEffect.INVERT);
-                if (battle.buffs[Util.SACRIFICE]) player.statusEffects.addEffect(StatusEffect.SACRIFICE);
-                if (battle.buffs[Util.SHIELD]) player.statusEffects.addEffect(StatusEffect.SHIELD);
-
-                // disable button until cooldown over
-                onCd = true;
-                optionButtons[0].setTouchable(Touchable.disabled);
-                optionButtons[0].setStyle(disabled[0]);
-                optionNameLabels[0].setText("ON COOLDOWN");
-                optionButtonTouchable[0] = false;
-
-                shouldReset = true;
+                performSpecialMove();
             }
         });
 
@@ -366,30 +384,74 @@ public class MoveUI extends BattleUI {
         optionButtons[1].addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                if (!player.settings.muteSfx) rm.moveselectclick.play(player.settings.sfxVolume);
-                uiHandler.currentState = com.anyicomplex.unlucky.event.BattleState.DIALOG;
-                uiHandler.moveUI.toggleMoveAndOptionUI(false);
-                if (onCd) turnCounter++;
-                else {
-                    smove = playerSmoveset.random();
-                    resetSpecialMoves();
-                }
-                // 7% chance to run from the battle
-                if (Util.isSuccess(Util.RUN_FROM_BATTLE)) {
-                    uiHandler.battleEventHandler.startDialog(new String[]{
-                            "You successfully ran from the battle!"
-                    }, BattleEvent.PLAYER_TURN, BattleEvent.END_BATTLE);
-                } else {
-                    uiHandler.battleEventHandler.startDialog(new String[]{
-                            "You couldn't run from the battle!"
-                    }, BattleEvent.PLAYER_TURN, BattleEvent.ENEMY_TURN);
-                }
-                optionButtons[1].setTouchable(Touchable.disabled);
-                optionButtons[1].setStyle(disabled[1]);
-                optionDescLabels[1].setText("cannot run again");
-                optionButtonTouchable[1] = false;
+                performEscape();
             }
         });
+    }
+
+    public void performSpecialMove() {
+        if (uiHandler.currentState == BattleState.DIALOG) return;
+        if (!optionButtons[0].isTouchable()) return;
+        if (!player.settings.muteSfx) rm.moveselectclick.play(player.settings.sfxVolume);
+        uiHandler.currentState = BattleState.DIALOG;
+        uiHandler.moveUI.toggleMoveAndOptionUI(false);
+        player.stats.numSMovesUsed++;
+        // remove current smove from pool
+        playerSmoveset.removeValue(smove, false);
+        if (playerSmoveset.size == 0) {
+            onCd = false;
+            turnCounter = player.smoveCd;
+            resetSpecialMoves();
+        }
+        battle.buffs[smove.id] = true;
+
+        uiHandler.battleEventHandler.startDialog(battle.getSpecialMoveDialog(smove.id),
+                BattleEvent.PLAYER_TURN, BattleEvent.PLAYER_TURN);
+
+        // add status icons that should show immediately after dialog
+        if (battle.buffs[Util.DISTRACT]) battle.opponent.statusEffects.addEffect(StatusEffect.DISTRACT);
+        if (battle.buffs[Util.FOCUS]) player.statusEffects.addEffect(StatusEffect.FOCUS);
+        if (battle.buffs[Util.INTIMIDATE]) player.statusEffects.addEffect(StatusEffect.INTIMIDATE);
+        if (battle.buffs[Util.REFLECT]) battle.opponent.statusEffects.addEffect(StatusEffect.REFLECT);
+        if (battle.buffs[Util.INVERT]) player.statusEffects.addEffect(StatusEffect.INVERT);
+        if (battle.buffs[Util.SACRIFICE]) player.statusEffects.addEffect(StatusEffect.SACRIFICE);
+        if (battle.buffs[Util.SHIELD]) player.statusEffects.addEffect(StatusEffect.SHIELD);
+
+        // disable button until cooldown over
+        onCd = true;
+        optionButtons[0].setTouchable(Touchable.disabled);
+        optionButtons[0].setStyle(disabled[0]);
+        optionNameLabels[0].setText("ON COOLDOWN");
+        optionButtonTouchable[0] = false;
+
+        shouldReset = true;
+    }
+
+    public void performEscape() {
+        if (uiHandler.currentState == BattleState.DIALOG) return;
+        if (!optionButtons[1].isTouchable()) return;
+        if (!player.settings.muteSfx) rm.moveselectclick.play(player.settings.sfxVolume);
+        uiHandler.currentState = BattleState.DIALOG;
+        uiHandler.moveUI.toggleMoveAndOptionUI(false);
+        if (onCd) turnCounter++;
+        else {
+            smove = playerSmoveset.random();
+            resetSpecialMoves();
+        }
+        // 7% chance to run from the battle
+        if (Util.isSuccess(Util.RUN_FROM_BATTLE)) {
+            uiHandler.battleEventHandler.startDialog(new String[]{
+                    "You successfully ran from the battle!"
+            }, BattleEvent.PLAYER_TURN, BattleEvent.END_BATTLE);
+        } else {
+            uiHandler.battleEventHandler.startDialog(new String[]{
+                    "You couldn't run from the battle!"
+            }, BattleEvent.PLAYER_TURN, BattleEvent.ENEMY_TURN);
+        }
+        optionButtons[1].setTouchable(Touchable.disabled);
+        optionButtons[1].setStyle(disabled[1]);
+        optionDescLabels[1].setText("cannot run again");
+        optionButtonTouchable[1] = false;
     }
 
 }

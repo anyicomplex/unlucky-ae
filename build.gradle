@@ -26,8 +26,13 @@ configure(subprojects - project(':android')) {
 }
 
 subprojects {
-	version = '0.0.1'
-	ext.appName = 'unlucky-ae'
+	ext {
+		appName = "Unlucky AE"
+		appVersion = '1.1.0'
+		appVersionCode = 10
+		appSourceCompatibility = '1.8'
+	}
+	version = appVersion
 	repositories {
 		mavenCentral()
 		mavenLocal()

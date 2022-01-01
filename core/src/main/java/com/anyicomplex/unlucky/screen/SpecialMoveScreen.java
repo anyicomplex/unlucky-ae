@@ -1,5 +1,57 @@
+/*
+ *   Copyright (C) 2021 Yi An
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   This program is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU General Public License for more details.
+ *
+ *   You should have received a copy of the GNU General Public License
+ *   along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ *   Original project's License:
+ *
+ *   MIT License
+ *
+ *   Copyright (c) 2018 Ming Li
+ *
+ *   Permission is hereby granted, free of charge, to any person obtaining a copy
+ *   of this software and associated documentation files (the "Software"), to deal
+ *   in the Software without restriction, including without limitation the rights
+ *   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ *   copies of the Software, and to permit persons to whom the Software is
+ *   furnished to do so, subject to the following conditions:
+ *
+ *   The above copyright notice and this permission notice shall be included in all
+ *   copies or substantial portions of the Software.
+ *
+ *   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ *   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ *   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ *   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ *   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ *   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ *   SOFTWARE.
+ */
+
 package com.anyicomplex.unlucky.screen;
 
+import com.anyicomplex.unlucky.Unlucky;
+import com.anyicomplex.unlucky.battle.SpecialMove;
+import com.anyicomplex.unlucky.battle.SpecialMoveset;
+import com.anyicomplex.unlucky.entity.Player;
+import com.anyicomplex.unlucky.resource.ResourceManager;
+import com.anyicomplex.unlucky.resource.Util;
+import com.anyicomplex.unlucky.ui.smove.SMoveTooltip;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
+import com.badlogic.gdx.InputAdapter;
+import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
@@ -12,13 +64,6 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Array;
-import com.anyicomplex.unlucky.battle.SpecialMove;
-import com.anyicomplex.unlucky.battle.SpecialMoveset;
-import com.anyicomplex.unlucky.entity.Player;
-import com.anyicomplex.unlucky.Unlucky;
-import com.anyicomplex.unlucky.resource.ResourceManager;
-import com.anyicomplex.unlucky.resource.Util;
-import com.anyicomplex.unlucky.ui.smove.SMoveTooltip;
 
 /**
  * Screen for managing the player's special moveset
@@ -182,6 +227,7 @@ public class SpecialMoveScreen extends MenuExtensionScreen {
         super.showSlide(false);
         scrollTable.remove();
         createScrollPane();
+        stage.setScrollFocus(scrollPane);
         smoveButtons[0].toFront();
         smoveButtons[1].toFront();
         smoveButtonLabels[0].toFront();
@@ -189,6 +235,31 @@ public class SpecialMoveScreen extends MenuExtensionScreen {
         addSmoveActors();
         // update turn cd
         turnPrompt.setText("Special moves can be used in battle every " + player.smoveCd + " turns.");
+
+        InputMultiplexer multiplexer = new InputMultiplexer();
+        multiplexer.addProcessor(stage);
+        multiplexer.addProcessor(new InputAdapter() {
+            @Override
+            public boolean keyDown(int keycode) {
+                if (!clickable) return super.keyDown(keycode);
+                if (keycode == Input.Keys.ESCAPE) {
+                    unselectSlot();
+                    if (!game.player.settings.muteSfx) rm.buttonclick0.play(game.player.settings.sfxVolume);
+                    smoveButtons[0].setStyle(addButtonStyle[1]);
+                    smoveButtons[0].setTouchable(Touchable.disabled);
+                    smoveButtons[1].setStyle(removeButtonStyle[1]);
+                    smoveButtons[1].setTouchable(Touchable.disabled);
+                    smoveToRemove = -1;
+                    smoveToAdd = null;
+                    game.menuScreen.transitionIn = 1;
+                    setSlideScreen(game.menuScreen, true);
+                    Gdx.input.setInputProcessor(stage);
+                    return true;
+                }
+                return super.keyDown(keycode);
+            }
+        });
+        Gdx.input.setInputProcessor(multiplexer);
     }
 
     /**
@@ -238,7 +309,7 @@ public class SpecialMoveScreen extends MenuExtensionScreen {
         // add button
         smoveButtons[0].addListener(new ClickListener() {
             public void clicked(InputEvent event, float x, float y) {
-                if (!game.player.settings.muteSfx) rm.buttonclick1.play(game.player.settings.sfxVolume);
+                if (!game.player.settings.muteSfx) rm.buttonclick1.play(game.player.settings.sfxVolume * 0.3f);
                 unselectSlot();
                 add();
             }
@@ -247,7 +318,7 @@ public class SpecialMoveScreen extends MenuExtensionScreen {
         // remove button
         smoveButtons[1].addListener(new ClickListener() {
             public void clicked(InputEvent event, float x, float y) {
-                if (!game.player.settings.muteSfx) rm.buttonclick1.play(game.player.settings.sfxVolume);
+                if (!game.player.settings.muteSfx) rm.buttonclick1.play(game.player.settings.sfxVolume * 0.3f);
                 if (smoveToRemove != -1) {
                     unselectSlot();
                     smoveButtons[1].setStyle(removeButtonStyle[1]);
@@ -394,7 +465,7 @@ public class SpecialMoveScreen extends MenuExtensionScreen {
         stage.addActor(scrollTable);
         selectionContainer = new Table();
 
-        ButtonGroup bg = new ButtonGroup();
+        ButtonGroup<TextButton> bg = new ButtonGroup<>();
         bg.setMaxCheckCount(1);
         bg.setMinCheckCount(0);
 
@@ -441,7 +512,7 @@ public class SpecialMoveScreen extends MenuExtensionScreen {
             smoveGroup.addActor(desc);
             smoveGroup.addActor(status);
 
-            selectionContainer.add(smoveGroup).padBottom(2).size(80, 30).row();
+            selectionContainer.add(smoveGroup).padBottom(2).padRight(-20).size(80, 30).row();
         }
         selectionContainer.pack();
         selectionContainer.setTransform(false);
@@ -450,12 +521,12 @@ public class SpecialMoveScreen extends MenuExtensionScreen {
 
         scrollPane = new ScrollPane(selectionContainer, rm.skin);
         scrollPane.setScrollingDisabled(true, false);
-        scrollPane.setFadeScrollBars(true);
+        scrollPane.setFadeScrollBars(false);
         // remove scroll bar
-        scrollPane.setupFadeScrollBars(0, 0);
+        // scrollPane.setupFadeScrollBars(0, 0);
         scrollPane.layout();
         scrollTable.add(scrollPane).size(120, 80).fill();
-        scrollTable.setPosition(-48, -12);
+        scrollTable.setPosition(-58, -12);
     }
 
     /**

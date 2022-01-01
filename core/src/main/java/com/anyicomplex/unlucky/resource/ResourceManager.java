@@ -1,5 +1,52 @@
+/*
+ *   Copyright (C) 2021 Yi An
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   This program is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU General Public License for more details.
+ *
+ *   You should have received a copy of the GNU General Public License
+ *   along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ *   Original project's License:
+ *
+ *   MIT License
+ *
+ *   Copyright (c) 2018 Ming Li
+ *
+ *   Permission is hereby granted, free of charge, to any person obtaining a copy
+ *   of this software and associated documentation files (the "Software"), to deal
+ *   in the Software without restriction, including without limitation the rights
+ *   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ *   copies of the Software, and to permit persons to whom the Software is
+ *   furnished to do so, subject to the following conditions:
+ *
+ *   The above copyright notice and this permission notice shall be included in all
+ *   copies or substantial portions of the Software.
+ *
+ *   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ *   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ *   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ *   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ *   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ *   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ *   SOFTWARE.
+ */
+
 package com.anyicomplex.unlucky.resource;
 
+import com.anyicomplex.unlucky.battle.Move;
+import com.anyicomplex.unlucky.inventory.Item;
+import com.anyicomplex.unlucky.inventory.ShopItem;
+import com.anyicomplex.unlucky.map.Level;
+import com.anyicomplex.unlucky.map.World;
+import com.anyicomplex.unlucky.util.Disposer;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.audio.Music;
@@ -13,13 +60,9 @@ import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
-import com.anyicomplex.unlucky.battle.Move;
-import com.anyicomplex.unlucky.inventory.Item;
-import com.anyicomplex.unlucky.inventory.ShopItem;
-import com.anyicomplex.unlucky.map.Level;
-import com.anyicomplex.unlucky.map.World;
 
 /**
  * Main resource loading and storage class. Uses an AssetManager to manage textures, sounds,
@@ -27,7 +70,7 @@ import com.anyicomplex.unlucky.map.World;
  *
  * @author Ming Li
  */
-public class ResourceManager {
+public class ResourceManager implements Disposable {
 
     public AssetManager assetManager;
     // json
@@ -576,38 +619,14 @@ public class ResourceManager {
         spookyGraveyardTheme.setVolume(volume);
     }
 
+    @Override
     public void dispose() {
-        assetManager.dispose();
-        pixel10.dispose();
-        atlas.dispose();
-        skin.dispose();
-        dialogSkin.dispose();
-
-        menuTheme.dispose();
-        slimeForestTheme.dispose();
-        spookyGraveyardTheme.dispose();
-        frostyCaveTheme.dispose();
-        battleTheme.dispose();
-
-        buttonclick0.dispose();
-        buttonclick1.dispose();
-        buttonclick2.dispose();
-        invselectclick.dispose();
-        moveselectclick.dispose();
-        textprogression.dispose();
-        hit.dispose();
-        blueattack.dispose();
-        redattack.dispose();
-        yellowattack.dispose();
-        heal.dispose();
-        death.dispose();
-        thunder.dispose();
-        lightrain.dispose();
-        heavyrain.dispose();
-        teleport.dispose();
-        movement.dispose();
-        finish.dispose();
-        battlestart.dispose();
+        Disposer.dispose(assetManager, pixel10, atlas, skin, dialogSkin,
+                menuTheme, slimeForestTheme, spookyGraveyardTheme, frostyCaveTheme,
+                battleTheme, buttonclick0, buttonclick1, buttonclick2,
+                invselectclick, moveselectclick, textprogression, hit,
+                blueattack, redattack, yellowattack, heal, death, thunder,
+                lightrain, heavyrain, teleport, movement, finish, battlestart);
     }
 
 }

@@ -11,6 +11,8 @@ dependencies {
 	implementation project(':core')
 }
 
+ext.jarBaseName = appName.replaceAll(" ", "-").toLowerCase();
+
 def os = System.properties['os.name'].toLowerCase()
 
 run {
@@ -25,7 +27,7 @@ run {
 
 jar {
 // sets the name of the .jar file this produces to the name of the game or app.
-	archiveBaseName.set(appName)
+	archiveBaseName.set(jarBaseName)
 // the duplicatesStrategy matters starting in Gradle 7.0; this setting works.
 	duplicatesStrategy(DuplicatesStrategy.EXCLUDE)
 	dependsOn configurations.runtimeClasspath
@@ -38,9 +40,22 @@ jar {
 // setting the manifest makes the JAR runnable.
 	manifest {
 		attributes 'Main-Class': project.mainClassName
+		attributes 'Specification-Title': appName
+		attributes 'Specification-Version': appVersion
+		attributes 'Implementation-Version': appVersionCode
 	}
 // this last step may help on some OSes that need extra instruction to make runnable JARs.
 	doLast {
 		file(archiveFile).setExecutable(true, false)
+	}
+}
+
+task runJar (dependsOn: jar, type: JavaExec) {
+	classpath = files('build/libs/' + jarBaseName + '-' + appVersion + '.jar')
+	setIgnoreExitValue(true)
+
+	if (os.contains('mac')) {
+		// Required to run LWJGL3 Java apps on MacOS
+		jvmArgs += "-XstartOnFirstThread"
 	}
 }

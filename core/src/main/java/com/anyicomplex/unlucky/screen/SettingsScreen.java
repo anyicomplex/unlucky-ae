@@ -1,12 +1,53 @@
+/*
+ *   Copyright (C) 2021 Yi An
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   This program is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU General Public License for more details.
+ *
+ *   You should have received a copy of the GNU General Public License
+ *   along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ *   Original project's License:
+ *
+ *   MIT License
+ *
+ *   Copyright (c) 2018 Ming Li
+ *
+ *   Permission is hereby granted, free of charge, to any person obtaining a copy
+ *   of this software and associated documentation files (the "Software"), to deal
+ *   in the Software without restriction, including without limitation the rights
+ *   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ *   copies of the Software, and to permit persons to whom the Software is
+ *   furnished to do so, subject to the following conditions:
+ *
+ *   The above copyright notice and this permission notice shall be included in all
+ *   copies or substantial portions of the Software.
+ *
+ *   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ *   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ *   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ *   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ *   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ *   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ *   SOFTWARE.
+ */
+
 package com.anyicomplex.unlucky.screen;
 
-import com.badlogic.gdx.Gdx;
+import com.anyicomplex.unlucky.Unlucky;
+import com.anyicomplex.unlucky.resource.ResourceManager;
+import com.badlogic.gdx.*;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.InputEvent;
-import com.badlogic.gdx.scenes.scene2d.Touchable;
+import com.badlogic.gdx.scenes.scene2d.*;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.CheckBox;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
@@ -15,9 +56,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.Slider;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
-import com.anyicomplex.unlucky.Unlucky;
-import com.anyicomplex.unlucky.map.WeatherType;
-import com.anyicomplex.unlucky.resource.ResourceManager;
 
 /**
  *
@@ -50,6 +88,10 @@ public class SettingsScreen extends MenuExtensionScreen {
     private CheckBox showEnemyLevels;
     private CheckBox showWeatherAnims;
     private CheckBox showFps;
+    private CheckBox fullscreen;
+
+    private volatile boolean fullscreenClicked = false;
+    private volatile boolean shouldCheckFullscreen = true;
 
     public SettingsScreen(final Unlucky game, final ResourceManager rm) {
         super(game, rm);
@@ -99,20 +141,20 @@ public class SettingsScreen extends MenuExtensionScreen {
         stage.addActor(description);
 
         // create settings labels
-        settingLabels = new Label[7];
+        settingLabels = new Label[8];
         String[] settingStrs = new String[] {
             "MUSIC VOLUME", "SFX VOLUME", "MUTE MUSIC:", "MUTE SFX:",
-            "SHOW ENEMY LEVELS:", "WEATHER ANIMATIONS:", "SHOW FPS:"
+            "SHOW ENEMY LEVELS:", "WEATHER ANIMATIONS:", "SHOW FPS:", "FULLSCREEN:"
         };
-        for (int i = 0; i < 7; i++) {
+        for (int i = 0; i < 8; i ++) {
             settingLabels[i] = new Label(settingStrs[i], white);
             settingLabels[i].setTouchable(Touchable.disabled);
             settingLabels[i].setFontScale(0.5f);
             stage.addActor(settingLabels[i]);
         }
-        for (int i = 0; i < 2; i++) settingLabels[i].setPosition(14, 76 - i * 24);
-        for (int i = 2; i < 4; i++) settingLabels[i].setPosition(14, 26 - (i - 2) * 14);
-        for (int i = 4; i < 7; i++) settingLabels[i].setPosition(111, 72 - (i - 4) * 16);
+        for (int i = 0; i < 2; i ++) settingLabels[i].setPosition(14, 76 - i * 24);
+        for (int i = 2; i < 4; i ++) settingLabels[i].setPosition(14, 26 - (i - 2) * 14);
+        for (int i = 4; i < 8; i ++) settingLabels[i].setPosition(111, 72 - (i - 4) * 16);
 
         createSliders();
         createCheckboxes();
@@ -131,6 +173,9 @@ public class SettingsScreen extends MenuExtensionScreen {
         sfxSlider.setPosition(14, 40);
         sfxSlider.setSize(75, 10);
         stage.addActor(sfxSlider);
+
+        musicSlider.setValue(game.player.settings.musicVolume);
+        sfxSlider.setValue(game.player.settings.sfxVolume);
 
         // slider events
         musicSlider.addListener(new ChangeListener() {
@@ -172,6 +217,19 @@ public class SettingsScreen extends MenuExtensionScreen {
         showFps = new CheckBox("", rm.skin);
         showFps.setPosition(170, 39);
         stage.addActor(showFps);
+        fullscreen = new CheckBox("", rm.skin);
+        fullscreen.setVisible(!Unlucky.DISABLE_FULLSCREEN);
+        settingLabels[7].setVisible(!Unlucky.DISABLE_FULLSCREEN);
+
+        fullscreen.setPosition(170, 23);
+        stage.addActor(fullscreen);
+
+        muteMusic.setChecked(game.player.settings.muteMusic);
+        muteSfx.setChecked(game.player.settings.muteSfx);
+        showEnemyLevels.setChecked(game.player.settings.showEnemyLevels);
+        showWeatherAnims.setChecked(game.player.settings.showWeatherAnimations);
+        showFps.setChecked(game.player.settings.showFps);
+        fullscreen.setChecked(Gdx.graphics.isFullscreen());
 
         // checkbox events
         muteMusic.addListener(new ChangeListener() {
@@ -221,6 +279,43 @@ public class SettingsScreen extends MenuExtensionScreen {
                 if (!inGame) game.save.save();
             }
         });
+        fullscreen.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                if (Unlucky.DISABLE_FULLSCREEN) return;
+                if (!shouldCheckFullscreen) return;
+                if (!game.player.settings.muteSfx) rm.buttonclick2.play(game.player.settings.sfxVolume);
+                fullscreenClicked = true;
+                game.player.settings.fullscreen = fullscreen.isChecked();
+                if (game.player.settings.fullscreen) game.fullscreen();
+                else game.windowedMode();
+                if (!inGame) game.save.save();
+            }
+        });
+    }
+
+    @Override
+    public void resize(int width, int height) {
+        super.resize(width, height);
+        if (Unlucky.DISABLE_FULLSCREEN) return;
+        if (fullscreenClicked) {
+            fullscreenClicked = false;
+            shouldCheckFullscreen = true;
+        }
+        else {
+            if (!game.player.settings.fullscreen && fullscreen.isChecked()) {
+                shouldCheckFullscreen = false;
+                fullscreen.setChecked(false);
+                game.setSystemCursor();
+                shouldCheckFullscreen = true;
+            }
+            if (game.player.settings.fullscreen && !fullscreen.isChecked()) {
+                shouldCheckFullscreen = false;
+                fullscreen.setChecked(true);
+                game.setCustomCursor();
+                shouldCheckFullscreen = true;
+            }
+        }
     }
 
     public void show() {
@@ -229,7 +324,7 @@ public class SettingsScreen extends MenuExtensionScreen {
 
         // fade in transition if in game
         if (inGame) {
-            Gdx.input.setInputProcessor(stage);
+            // Gdx.input.setInputProcessor(stage);
             renderBatch = false;
             batchFade = true;
 
@@ -247,14 +342,29 @@ public class SettingsScreen extends MenuExtensionScreen {
             stage.addAction(Actions.alpha(1));
         }
 
-        // set saved settings
-        musicSlider.setValue(game.player.settings.musicVolume);
-        sfxSlider.setValue(game.player.settings.sfxVolume);
-        muteMusic.setChecked(game.player.settings.muteMusic);
-        muteSfx.setChecked(game.player.settings.muteSfx);
-        showEnemyLevels.setChecked(game.player.settings.showEnemyLevels);
-        showWeatherAnims.setChecked(game.player.settings.showWeatherAnimations);
-        showFps.setChecked(game.player.settings.showFps);
+        InputMultiplexer multiplexer = new InputMultiplexer();
+        multiplexer.addProcessor(stage);
+        multiplexer.addProcessor(new InputAdapter() {
+            @Override
+            public boolean keyDown(int keycode) {
+                if (!clickable) return super.keyDown(keycode);
+                if (keycode == Input.Keys.ESCAPE) {
+                    if (!game.player.settings.muteSfx) rm.buttonclick0.play(game.player.settings.sfxVolume);
+                    if (inGame) {
+                        game.gameScreen.resetGame = false;
+                        setFadeScreen(game.gameScreen);
+                        game.gameScreen.hud.settingsDialog.show(game.gameScreen.hud.getStage());
+                    }
+                    else {
+                        game.menuScreen.transitionIn = 2;
+                        setSlideScreen(game.menuScreen, false);
+                    }
+                    return true;
+                }
+                return super.keyDown(keycode);
+            }
+        });
+        Gdx.input.setInputProcessor(multiplexer);
     }
 
     @Override

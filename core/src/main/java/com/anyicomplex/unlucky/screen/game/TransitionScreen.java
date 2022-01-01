@@ -1,17 +1,58 @@
+/*
+ *   Copyright (C) 2021 Yi An
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   This program is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU General Public License for more details.
+ *
+ *   You should have received a copy of the GNU General Public License
+ *   along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ *   Original project's License:
+ *
+ *   MIT License
+ *
+ *   Copyright (c) 2018 Ming Li
+ *
+ *   Permission is hereby granted, free of charge, to any person obtaining a copy
+ *   of this software and associated documentation files (the "Software"), to deal
+ *   in the Software without restriction, including without limitation the rights
+ *   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ *   copies of the Software, and to permit persons to whom the Software is
+ *   furnished to do so, subject to the following conditions:
+ *
+ *   The above copyright notice and this permission notice shall be included in all
+ *   copies or substantial portions of the Software.
+ *
+ *   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ *   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ *   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ *   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ *   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ *   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ *   SOFTWARE.
+ */
+
 package com.anyicomplex.unlucky.screen.game;
 
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.math.MathUtils;
+import com.anyicomplex.unlucky.Unlucky;
 import com.anyicomplex.unlucky.entity.Player;
 import com.anyicomplex.unlucky.event.Battle;
 import com.anyicomplex.unlucky.event.EventState;
-import com.anyicomplex.unlucky.Unlucky;
 import com.anyicomplex.unlucky.map.WeatherType;
 import com.anyicomplex.unlucky.resource.ResourceManager;
 import com.anyicomplex.unlucky.resource.Util;
 import com.anyicomplex.unlucky.screen.GameScreen;
-import com.anyicomplex.unlucky.ui.battleui.BattleUIHandler;
 import com.anyicomplex.unlucky.ui.Hud;
+import com.anyicomplex.unlucky.ui.battleui.BattleUIHandler;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.MathUtils;
 
 /**
  * Renders a random transition screen between two EventStates
@@ -195,13 +236,13 @@ public class TransitionScreen {
                 case 4:
                     x0 += (Util.TRANSITION_SCREEN_SPEED / 2) * dt;
                     x1 -= (Util.TRANSITION_SCREEN_SPEED / 2) * dt;
-                    if (x0 >= Unlucky.V_WIDTH / 2 && x1 <= Unlucky.V_WIDTH / 2) end();
+                    if (x0 >= Unlucky.V_WIDTH / 2.0f && x1 <= Unlucky.V_WIDTH / 2.0f) end();
                     break;
                 // vertical split
                 case 5:
                     y0 += (Util.TRANSITION_SCREEN_SPEED / 2) * dt;
                     y1 -= (Util.TRANSITION_SCREEN_SPEED / 2) * dt;
-                    if (y0 >= Unlucky.V_HEIGHT / 2 && y1 <= Unlucky.V_HEIGHT / 2) end();
+                    if (y0 >= Unlucky.V_HEIGHT / 2.0f && y1 <= Unlucky.V_HEIGHT / 2.0f) end();
                     break;
             }
         }
@@ -239,13 +280,13 @@ public class TransitionScreen {
                     break;
                 // horizontal split
                 case 4:
-                    shapeRenderer.rect(x0, 0, -Unlucky.V_WIDTH / 2, Unlucky.V_HEIGHT);
-                    shapeRenderer.rect(x1, 0, Unlucky.V_WIDTH / 2, Unlucky.V_HEIGHT);
+                    shapeRenderer.rect(x0, 0, -Unlucky.V_WIDTH / 2.0f, Unlucky.V_HEIGHT);
+                    shapeRenderer.rect(x1, 0, Unlucky.V_WIDTH / 2.0f, Unlucky.V_HEIGHT);
                     break;
                 // vertical split
                 case 5:
-                    shapeRenderer.rect(0, y0, Unlucky.V_WIDTH, -Unlucky.V_HEIGHT / 2);
-                    shapeRenderer.rect(0, y1, Unlucky.V_WIDTH, Unlucky.V_HEIGHT / 2);
+                    shapeRenderer.rect(0, y0, Unlucky.V_WIDTH, -Unlucky.V_HEIGHT / 2.0f);
+                    shapeRenderer.rect(0, y1, Unlucky.V_WIDTH, Unlucky.V_HEIGHT / 2.0f);
                     break;
             }
         }

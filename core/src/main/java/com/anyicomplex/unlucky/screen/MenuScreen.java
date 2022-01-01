@@ -1,6 +1,53 @@
+/*
+ *   Copyright (C) 2021 Yi An
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   This program is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU General Public License for more details.
+ *
+ *   You should have received a copy of the GNU General Public License
+ *   along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ *   Original project's License:
+ *
+ *   MIT License
+ *
+ *   Copyright (c) 2018 Ming Li
+ *
+ *   Permission is hereby granted, free of charge, to any person obtaining a copy
+ *   of this software and associated documentation files (the "Software"), to deal
+ *   in the Software without restriction, including without limitation the rights
+ *   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ *   copies of the Software, and to permit persons to whom the Software is
+ *   furnished to do so, subject to the following conditions:
+ *
+ *   The above copyright notice and this permission notice shall be included in all
+ *   copies or substantial portions of the Software.
+ *
+ *   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ *   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ *   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ *   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ *   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ *   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ *   SOFTWARE.
+ */
+
 package com.anyicomplex.unlucky.screen;
 
+import com.anyicomplex.unlucky.Unlucky;
+import com.anyicomplex.unlucky.effects.Moving;
+import com.anyicomplex.unlucky.resource.ResourceManager;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
+import com.badlogic.gdx.InputAdapter;
+import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Group;
@@ -13,9 +60,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
-import com.anyicomplex.unlucky.effects.Moving;
-import com.anyicomplex.unlucky.Unlucky;
-import com.anyicomplex.unlucky.resource.ResourceManager;
 
 /**
  * The main menu screen of the game that holds all access points for playing,
@@ -53,6 +97,8 @@ public class MenuScreen extends MenuExtensionScreen {
     private Label copyright;
     private Label github;
     private Label youtube;
+    private Label copyright2;
+    private Label github2;
     private Image[] creditsIcons;
     private ImageButton exitButton;
 
@@ -73,7 +119,7 @@ public class MenuScreen extends MenuExtensionScreen {
         handlePlayButton();
         handleOptionButtons();
 
-        battleLabel = new Label("Battle", menuStyle);
+        battleLabel = new Label("Start", menuStyle);
         battleLabel.setSize(80, 40);
         battleLabel.setFontScale(1.5f);
         battleLabel.setTouchable(Touchable.disabled);
@@ -96,7 +142,55 @@ public class MenuScreen extends MenuExtensionScreen {
 
         if (!rm.menuTheme.isPlaying()) rm.menuTheme.play();
 
-        Gdx.input.setInputProcessor(stage);
+        InputMultiplexer multiplexer = new InputMultiplexer();
+        multiplexer.addProcessor(stage);
+        multiplexer.addProcessor(new InputAdapter() {
+            @Override
+            public boolean keyDown(int keycode) {
+                if (!clickable) return super.keyDown(keycode);
+                switch (keycode) {
+                    case Input.Keys.E:
+                        if (!game.player.settings.muteSfx) rm.buttonclick0.play(game.player.settings.sfxVolume);
+                        setSlideScreen(game.inventoryScreen, false);
+                        return true;
+                    case Input.Keys.S:
+                        if (!game.player.settings.muteSfx) rm.buttonclick0.play(game.player.settings.sfxVolume);
+                        game.settingsScreen.inGame = false;
+                        setSlideScreen(game.settingsScreen, true);
+                        return true;
+                    case Input.Keys.H:
+                        if (!game.player.settings.muteSfx) rm.buttonclick0.play(game.player.settings.sfxVolume);
+                        setSlideScreen(game.shopScreen, false);
+                        return true;
+                    case Input.Keys.T:
+                        if (!game.player.settings.muteSfx) rm.buttonclick0.play(game.player.settings.sfxVolume);
+                        setSlideScreen(game.statisticsScreen, true);
+                        return true;
+                    case Input.Keys.M:
+                        if (!game.player.settings.muteSfx) rm.buttonclick0.play(game.player.settings.sfxVolume);
+                        setSlideScreen(game.smoveScreen, false);
+                        return true;
+                    case Input.Keys.I:
+                        if (!game.player.settings.muteSfx) rm.buttonclick0.play(game.player.settings.sfxVolume);
+                        credits.setVisible(true);
+                        return true;
+                    case Input.Keys.ESCAPE:
+                    if (credits.isVisible()) {
+                        if (!game.player.settings.muteSfx) rm.buttonclick0.play(game.player.settings.sfxVolume);
+                        credits.setVisible(false);
+                    }
+                    else Gdx.app.exit();
+                    return true;
+                    case Input.Keys.ENTER:
+                    case Input.Keys.NUMPAD_ENTER:
+                        if (!game.player.settings.muteSfx) rm.buttonclick0.play(game.player.settings.sfxVolume);
+                        setFadeScreen(game.worldSelectScreen);
+                        return true;
+                }
+                return super.keyDown(keycode);
+            }
+        });
+        Gdx.input.setInputProcessor(multiplexer);
         renderBatch = false;
         batchFade = true;
         resetTitleAnimation();
@@ -214,8 +308,8 @@ public class MenuScreen extends MenuExtensionScreen {
         credits.addActor(dark);
 
         frame = new Image(rm.skin, "textfield");
-        frame.setSize(100, 60);
-        frame.setPosition(Unlucky.V_WIDTH / 2 - 50, Unlucky.V_HEIGHT / 2 - 30);
+        frame.setSize(100, 100);
+        frame.setPosition(Unlucky.V_WIDTH / 2.0f - 50, Unlucky.V_HEIGHT / 2.0f - 50);
         credits.addActor(frame);
 
         ImageButton.ImageButtonStyle exitStyle = new ImageButton.ImageButtonStyle();
@@ -223,7 +317,7 @@ public class MenuScreen extends MenuExtensionScreen {
         exitStyle.imageDown = new TextureRegionDrawable(rm.exitbutton18x18[1][0]);
         exitButton = new ImageButton(exitStyle);
         exitButton.setSize(14, 14);
-        exitButton.setPosition(50 + 92, 30 + 52);
+        exitButton.setPosition(50 + 92, 50 + 52);
         credits.addActor(exitButton);
         exitButton.addListener(new ClickListener() {
             @Override
@@ -233,15 +327,15 @@ public class MenuScreen extends MenuExtensionScreen {
             }
         });
 
-        copyright = new Label("Unlucky V" + Unlucky.VERSION + "\nCopyright (c) 2018 Ming Li",
+        copyright = new Label("Unlucky V1.0" + "\nCopyright (c) 2018 Ming Li",
             new Label.LabelStyle(rm.pixel10, Color.WHITE));
         copyright.setFontScale(0.75f);
-        copyright.setPosition(53, 70);
+        copyright.setPosition(53, 86);
         copyright.setTouchable(Touchable.disabled);
         credits.addActor(copyright);
 
         github = new Label("GITHUB", new Label.LabelStyle(rm.pixel10, new Color(140 / 255.f, 60 / 255.f, 1, 1)));
-        github.setPosition(80, 56);
+        github.setPosition(80, 86 - 14);
         credits.addActor(github);
         github.addListener(new ClickListener() {
             @Override
@@ -251,7 +345,7 @@ public class MenuScreen extends MenuExtensionScreen {
         });
 
         youtube = new Label("YOUTUBE", new Label.LabelStyle(rm.pixel10, Color.RED));
-        youtube.setPosition(80, 38);
+        youtube.setPosition(80, 86 - 14 - 18);
         credits.addActor(youtube);
         youtube.addListener(new ClickListener() {
             @Override
@@ -260,15 +354,39 @@ public class MenuScreen extends MenuExtensionScreen {
             }
         });
 
-        creditsIcons = new Image[2];
-        for (int i = 0; i < 2; i++) {
+        copyright2 = new Label(Unlucky.APP_NAME + " V" + Unlucky.VERSION + "\nCopyright (c) 2021 Yi An",
+                new Label.LabelStyle(rm.pixel10, Color.WHITE));
+        copyright2.setFontScale(0.75f);
+        copyright2.setPosition(53, 86 - 14 - 18 - 22);
+        copyright2.setTouchable(Touchable.disabled);
+        credits.addActor(copyright2);
+
+        github2 = new Label("GITHUB", new Label.LabelStyle(rm.pixel10, new Color(140 / 255.f, 60 / 255.f, 1, 1)));
+        github2.setPosition(80, 86 - 14 - 18 - 22 - 14);
+        credits.addActor(github2);
+        github2.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                Gdx.net.openURI(Unlucky.GITHUB2);
+            }
+        });
+
+        creditsIcons = new Image[3];
+        for (int i = 0; i < 3; i ++) {
             final int index = i;
-            creditsIcons[i] = new Image(rm.creditsicons[i]);
-            creditsIcons[i].setPosition(56, 34 + i * 18);
+            if (i == 2) {
+                creditsIcons[i] = new Image(rm.creditsicons[1]);
+                creditsIcons[i].setPosition(56, 14);
+            }
+            else {
+                creditsIcons[i] = new Image(rm.creditsicons[i]);
+                creditsIcons[i].setPosition(56, 16 + 34 + i * 18);
+            }
             creditsIcons[i].addListener(new ClickListener() {
                 @Override
                 public void clicked(InputEvent event, float x, float y) {
                     if (index == 1) Gdx.net.openURI(Unlucky.GITHUB);
+                    if (index == 2) Gdx.net.openURI(Unlucky.GITHUB2);
                     else Gdx.net.openURI(Unlucky.YOUTUBE);
                 }
             });
@@ -279,7 +397,7 @@ public class MenuScreen extends MenuExtensionScreen {
     }
 
     public void update(float dt) {
-        for (int i = 0; i < 7; i++) {
+        for (int i = 0; i < titleMoves.length; i ++) {
             titleMoves[i].update(dt);
             letters[i].setPosition(titleMoves[i].position.x, titleMoves[i].position.y);
         }
@@ -292,7 +410,7 @@ public class MenuScreen extends MenuExtensionScreen {
         for (int i = 0; i < titleMoves.length; i++) {
             titleMoves[i].origin.set(new Vector2(37 + i * 18, 120 + 24));
             titleMoves[i].target.set(new Vector2(37 + i * 18, 120 - 35));
-            titleMoves[i].speed = (275 - i * 24) / 2;
+            titleMoves[i].speed = (275 - i * 24) / 2.0f;
             titleMoves[i].horizontal = false;
             titleMoves[i].start();
         }

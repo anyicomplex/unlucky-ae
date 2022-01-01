@@ -1,7 +1,62 @@
+/*
+ *   Copyright (C) 2021 Yi An
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   This program is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU General Public License for more details.
+ *
+ *   You should have received a copy of the GNU General Public License
+ *   along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ *   Original project's License:
+ *
+ *   MIT License
+ *
+ *   Copyright (c) 2018 Ming Li
+ *
+ *   Permission is hereby granted, free of charge, to any person obtaining a copy
+ *   of this software and associated documentation files (the "Software"), to deal
+ *   in the Software without restriction, including without limitation the rights
+ *   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ *   copies of the Software, and to permit persons to whom the Software is
+ *   furnished to do so, subject to the following conditions:
+ *
+ *   The above copyright notice and this permission notice shall be included in all
+ *   copies or substantial portions of the Software.
+ *
+ *   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ *   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ *   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ *   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ *   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ *   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ *   SOFTWARE.
+ */
+
 package com.anyicomplex.unlucky.screen;
 
+import com.anyicomplex.unlucky.Unlucky;
+import com.anyicomplex.unlucky.event.Battle;
+import com.anyicomplex.unlucky.event.EventState;
+import com.anyicomplex.unlucky.map.GameMap;
+import com.anyicomplex.unlucky.map.WeatherType;
+import com.anyicomplex.unlucky.parallax.Background;
+import com.anyicomplex.unlucky.resource.ResourceManager;
+import com.anyicomplex.unlucky.screen.game.DialogScreen;
+import com.anyicomplex.unlucky.screen.game.LevelUpScreen;
+import com.anyicomplex.unlucky.screen.game.TransitionScreen;
+import com.anyicomplex.unlucky.ui.Hud;
+import com.anyicomplex.unlucky.ui.battleui.BattleUIHandler;
+import com.anyicomplex.unlucky.util.Disposer;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
@@ -9,17 +64,6 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
-import com.anyicomplex.unlucky.event.Battle;
-import com.anyicomplex.unlucky.event.EventState;
-import com.anyicomplex.unlucky.Unlucky;
-import com.anyicomplex.unlucky.map.GameMap;
-import com.anyicomplex.unlucky.parallax.Background;
-import com.anyicomplex.unlucky.resource.ResourceManager;
-import com.anyicomplex.unlucky.screen.game.DialogScreen;
-import com.anyicomplex.unlucky.screen.game.LevelUpScreen;
-import com.anyicomplex.unlucky.screen.game.TransitionScreen;
-import com.anyicomplex.unlucky.ui.battleui.BattleUIHandler;
-import com.anyicomplex.unlucky.ui.Hud;
 
 /**
  * Handles all gameplay.
@@ -76,9 +120,146 @@ public class GameScreen extends AbstractScreen {
         // input multiplexer
         multiplexer = new InputMultiplexer();
         multiplexer.addProcessor(hud.getStage());
+        multiplexer.addProcessor(new InputAdapter() {
+            @Override
+            public boolean keyDown(int keycode) {
+                if (!clickable) return super.keyDown(keycode);
+                if (game.inventoryUI.ui.moving.shouldStart) return super.keyDown(keycode);
+                switch (currentEvent) {
+                    case TILE_EVENT:
+                        switch (keycode) {
+                            case Input.Keys.ENTER:
+                            case Input.Keys.NUMPAD_ENTER:
+                                dialog.performClick();
+                                break;
+                        }
+                        return true;
+                    case BATTLING:
+                        switch (keycode) {
+                            case Input.Keys.ENTER:
+                            case Input.Keys.NUMPAD_ENTER:
+                                battleUIHandler.battleEventHandler.performClick();
+                                break;
+                            case Input.Keys.NUM_1:
+                            case Input.Keys.NUMPAD_1:
+                                battleUIHandler.moveUI.performMove(0);
+                                break;
+                            case Input.Keys.NUM_2:
+                            case Input.Keys.NUMPAD_2:
+                                battleUIHandler.moveUI.performMove(1);
+                                break;
+                            case Input.Keys.NUM_3:
+                            case Input.Keys.NUMPAD_3:
+                                battleUIHandler.moveUI.performMove(2);
+                                break;
+                            case Input.Keys.NUM_4:
+                            case Input.Keys.NUMPAD_4:
+                                battleUIHandler.moveUI.performMove(3);
+                                break;
+                            case Input.Keys.M:
+                                battleUIHandler.moveUI.performSpecialMove();
+                                break;
+                            case Input.Keys.ESCAPE:
+                                battleUIHandler.moveUI.performEscape();
+                                break;
+                        }
+                        return true;
+                    case DEATH:
+                        if (!game.player.settings.muteSfx) rm.buttonclick0.play(game.player.settings.sfxVolume);
+                        hud.backToMenu();
+                        return true;
+                    case MOVING:
+                        switch (keycode) {
+                            case Input.Keys.ESCAPE:
+                                if (!game.player.settings.muteSfx) rm.buttonclick0.play(game.player.settings.sfxVolume);
+                                hud.shade.setVisible(true);
+                                hud.toggle(false);
+
+                                // pause music and sfx
+                                gameMap.mapTheme.pause();
+                                if (gameMap.weather != WeatherType.NORMAL) {
+                                    rm.lightrain.stop(gameMap.soundId);
+                                    rm.heavyrain.stop(gameMap.soundId);
+                                }
+
+                                setCurrentEvent(EventState.PAUSE);
+                                hud.settingsDialog.show(hud.getStage());
+                                return true;
+                            case Input.Keys.E:
+                                if (!game.player.settings.muteSfx) rm.buttonclick0.play(game.player.settings.sfxVolume);
+                                hud.toggle(false);
+                                setCurrentEvent(EventState.INVENTORY);
+                                getGame().inventoryUI.init(false, null);
+                                getGame().inventoryUI.start();
+                                return true;
+                            case Input.Keys.W:
+                            case Input.Keys.UP:
+                                hud.dirIndex = 1;
+                                hud.dirTime = 0;
+                                hud.touchDown = true;
+                                break;
+                            case Input.Keys.A:
+                            case Input.Keys.LEFT:
+                                hud.dirIndex = 3;
+                                hud.dirTime = 0;
+                                hud.touchDown = true;
+                                break;
+                            case Input.Keys.S:
+                            case Input.Keys.DOWN:
+                                hud.dirIndex = 0;
+                                hud.dirTime = 0;
+                                hud.touchDown = true;
+                                break;
+                            case Input.Keys.D:
+                            case Input.Keys.RIGHT:
+                                hud.dirIndex = 2;
+                                hud.dirTime = 0;
+                                hud.touchDown = true;
+                                break;
+                            default:
+                                return super.keyDown(keycode);
+                        }
+                        return true;
+                    case PAUSE:
+                    case LEVEL_UP:
+                    case TRANSITION:
+                    case INVENTORY:
+                    case NONE:
+                        return super.keyDown(keycode);
+                }
+                return super.keyDown(keycode);
+            }
+
+            @Override
+            public boolean keyUp(int keycode) {
+                switch (keycode) {
+                    case Input.Keys.W:
+                    case Input.Keys.A:
+                    case Input.Keys.S:
+                    case Input.Keys.D:
+                    case Input.Keys.UP:
+                    case Input.Keys.LEFT:
+                    case Input.Keys.RIGHT:
+                    case Input.Keys.DOWN:
+                        hud.touchDown = false;
+                        return true;
+                }
+                return false;
+            }
+        });
         multiplexer.addProcessor(battleUIHandler.getStage());
         multiplexer.addProcessor(levelUp.getStage());
         multiplexer.addProcessor(dialog.getStage());
+    }
+
+    @Override
+    public void resize(int width, int height) {
+        hud.getStage().getViewport().update(width, height);
+        battleUIHandler.getStage().getViewport().update(width, height);
+        levelUp.getStage().getViewport().update(width, height);
+        dialog.getStage().getViewport().update(width, height);
+        game.inventoryUI.getStage().getViewport().update(width, height);
+        super.resize(width, height);
     }
 
     public void init(int worldIndex, int levelIndex) {
@@ -178,8 +359,8 @@ public class GameScreen extends AbstractScreen {
 
         if (currentEvent == EventState.BATTLING) {
             // update bg
-            for (int i = 0; i < bg.length; i++) {
-                bg[i].update(dt);
+            for (Background background : bg) {
+                background.update(dt);
             }
             battleUIHandler.update(dt);
         }
@@ -205,8 +386,8 @@ public class GameScreen extends AbstractScreen {
             if (currentEvent == EventState.BATTLING || transition.renderBattle) {
                 // bg camera
                 game.batch.setProjectionMatrix(battleUIHandler.getStage().getCamera().combined);
-                for (int i = 0; i < bg.length; i++) {
-                    bg[i].render(game.batch);
+                for (Background background : bg) {
+                    background.render(game.batch);
                 }
             }
 
@@ -237,10 +418,7 @@ public class GameScreen extends AbstractScreen {
 
     public void dispose() {
         super.dispose();
-        hud.dispose();
-        battleUIHandler.dispose();
-        dialog.dispose();
-        levelUp.dispose();
+        Disposer.dispose(hud, battleUIHandler, dialog, levelUp);
     }
 
     /**

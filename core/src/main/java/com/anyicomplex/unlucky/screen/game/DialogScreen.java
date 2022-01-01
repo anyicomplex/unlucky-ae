@@ -1,5 +1,54 @@
+/*
+ *   Copyright (C) 2021 Yi An
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   This program is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU General Public License for more details.
+ *
+ *   You should have received a copy of the GNU General Public License
+ *   along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ *   Original project's License:
+ *
+ *   MIT License
+ *
+ *   Copyright (c) 2018 Ming Li
+ *
+ *   Permission is hereby granted, free of charge, to any person obtaining a copy
+ *   of this software and associated documentation files (the "Software"), to deal
+ *   in the Software without restriction, including without limitation the rights
+ *   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ *   copies of the Software, and to permit persons to whom the Software is
+ *   furnished to do so, subject to the following conditions:
+ *
+ *   The above copyright notice and this permission notice shall be included in all
+ *   copies or substantial portions of the Software.
+ *
+ *   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ *   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ *   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ *   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ *   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ *   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ *   SOFTWARE.
+ */
+
 package com.anyicomplex.unlucky.screen.game;
 
+import com.anyicomplex.unlucky.entity.Player;
+import com.anyicomplex.unlucky.event.EventState;
+import com.anyicomplex.unlucky.map.Tile;
+import com.anyicomplex.unlucky.map.TileMap;
+import com.anyicomplex.unlucky.resource.ResourceManager;
+import com.anyicomplex.unlucky.resource.Util;
+import com.anyicomplex.unlucky.screen.GameScreen;
+import com.anyicomplex.unlucky.ui.UI;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -9,14 +58,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
-import com.anyicomplex.unlucky.entity.Player;
-import com.anyicomplex.unlucky.event.EventState;
-import com.anyicomplex.unlucky.map.Tile;
-import com.anyicomplex.unlucky.map.TileMap;
-import com.anyicomplex.unlucky.resource.ResourceManager;
-import com.anyicomplex.unlucky.resource.Util;
-import com.anyicomplex.unlucky.screen.GameScreen;
-import com.anyicomplex.unlucky.ui.UI;
 
 /**
  * Puts in a dialog box that handles events from the event state.
@@ -80,35 +121,38 @@ public class DialogScreen extends UI {
         clickLabel.setSize(200, 120);
         clickLabel.setPosition(0, 0);
 
-        final Player p = player;
         clickLabel.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                if (dialogIndex + 1 == currentDialog.length && endCycle) {
-                    if (!p.settings.muteSfx) rm.textprogression.play(p.settings.sfxVolume);
-                    // the text animation has run through every element of the text array
-                    endDialog();
-                    handleEvent(nextEvent);
-                }
-                // after a cycle of text animation ends, clicking the UI goes to the next cycle
-                else if (endCycle && dialogIndex < currentDialog.length) {
-                    if (!p.settings.muteSfx) rm.textprogression.play(p.settings.sfxVolume);
-                    dialogIndex++;
-                    reset();
-                    currentText = currentDialog[dialogIndex];
-                    anim = currentText.split("");
-                    beginCycle = true;
-                }
-                // clicking on the box during a text animation completes it early
-                else if (beginCycle && !endCycle) {
-                    resultingText = currentText;
-                    textLabel.setText(resultingText);
-                    beginCycle = false;
-                    endCycle = true;
-                }
+                performClick();
             }
         });
         stage.addActor(clickLabel);
+    }
+
+    public void performClick() {
+        if (dialogIndex + 1 == currentDialog.length && endCycle) {
+            if (!player.settings.muteSfx) rm.textprogression.play(player.settings.sfxVolume);
+            // the text animation has run through every element of the text array
+            endDialog();
+            handleEvent(nextEvent);
+        }
+        // after a cycle of text animation ends, clicking the UI goes to the next cycle
+        else if (endCycle && dialogIndex < currentDialog.length) {
+            if (!player.settings.muteSfx) rm.textprogression.play(player.settings.sfxVolume);
+            dialogIndex++;
+            reset();
+            currentText = currentDialog[dialogIndex];
+            anim = currentText.split("");
+            beginCycle = true;
+        }
+        // clicking on the box during a text animation completes it early
+        else if (beginCycle && !endCycle) {
+            resultingText = currentText;
+            textLabel.setText(resultingText);
+            beginCycle = false;
+            endCycle = true;
+        }
     }
 
     /**

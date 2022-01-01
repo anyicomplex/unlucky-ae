@@ -1,11 +1,68 @@
+/*
+ *   Copyright (C) 2021 Yi An
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   This program is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU General Public License for more details.
+ *
+ *   You should have received a copy of the GNU General Public License
+ *   along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ *   Original project's License:
+ *
+ *   MIT License
+ *
+ *   Copyright (c) 2018 Ming Li
+ *
+ *   Permission is hereby granted, free of charge, to any person obtaining a copy
+ *   of this software and associated documentation files (the "Software"), to deal
+ *   in the Software without restriction, including without limitation the rights
+ *   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ *   copies of the Software, and to permit persons to whom the Software is
+ *   furnished to do so, subject to the following conditions:
+ *
+ *   The above copyright notice and this permission notice shall be included in all
+ *   copies or substantial portions of the Software.
+ *
+ *   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ *   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ *   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ *   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ *   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ *   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ *   SOFTWARE.
+ */
+
 package com.anyicomplex.unlucky.ui.inventory;
 
+import com.anyicomplex.unlucky.Unlucky;
+import com.anyicomplex.unlucky.entity.Player;
+import com.anyicomplex.unlucky.event.EventState;
+import com.anyicomplex.unlucky.inventory.Equipment;
+import com.anyicomplex.unlucky.inventory.Inventory;
+import com.anyicomplex.unlucky.inventory.Item;
+import com.anyicomplex.unlucky.resource.ResourceManager;
+import com.anyicomplex.unlucky.resource.Util;
+import com.anyicomplex.unlucky.ui.MovingImageUI;
+import com.anyicomplex.unlucky.ui.UI;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
+import com.badlogic.gdx.InputAdapter;
+import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.scenes.scene2d.*;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.InputListener;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
@@ -15,16 +72,6 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.DragListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
-import com.anyicomplex.unlucky.entity.Player;
-import com.anyicomplex.unlucky.event.EventState;
-import com.anyicomplex.unlucky.inventory.Equipment;
-import com.anyicomplex.unlucky.inventory.Inventory;
-import com.anyicomplex.unlucky.inventory.Item;
-import com.anyicomplex.unlucky.Unlucky;
-import com.anyicomplex.unlucky.resource.ResourceManager;
-import com.anyicomplex.unlucky.resource.Util;
-import com.anyicomplex.unlucky.ui.MovingImageUI;
-import com.anyicomplex.unlucky.ui.UI;
 
 /**
  * InventoryUI UI that allows for management of items and equips
@@ -46,7 +93,7 @@ public class InventoryUI extends UI {
     // dimensions to render the inventory at
     private static final int NUM_COLS = 6;
     // main background ui
-    private MovingImageUI ui;
+    public MovingImageUI ui;
     // exit button
     private ImageButton exitButton;
     // headers
@@ -188,8 +235,8 @@ public class InventoryUI extends UI {
 
         stage.addActor(ui);
         stage.addActor(exitButton);
-        for (int i = 0; i < headers.length; i++) stage.addActor(headers[i]);
-        for (int i = 0; i < stats.length; i++) stage.addActor(stats[i]);
+        for (Label header : headers) stage.addActor(header);
+        for (Label stat : stats) stage.addActor(stat);
         stage.addActor(selectedSlot);
         stage.addActor(tooltip);
         for (int i = 0; i < 2; i++) {
@@ -203,6 +250,37 @@ public class InventoryUI extends UI {
             Gdx.input.setInputProcessor(this.stage);
             renderHealthBars = true;
         }
+
+        InputMultiplexer multiplexer = new InputMultiplexer();
+        multiplexer.addProcessor(stage);
+        multiplexer.addProcessor(new InputAdapter() {
+            @Override
+            public boolean keyDown(int keycode) {
+                if (inMenu) {
+                    if (!game.inventoryScreen.isClickable()) return super.keyDown(keycode);
+                }
+                else {
+                    if (ui.moving.shouldStart) return super.keyDown(keycode);
+                }
+                if (keycode == Input.Keys.ESCAPE) {
+                    end();
+                    if (!game.player.settings.muteSfx) rm.buttonclick0.play(game.player.settings.sfxVolume);
+                    if (inMenu) {
+                        removeInventoryActors();
+                        game.menuScreen.transitionIn = 1;
+                        renderHealthBars = false;
+                        game.inventoryScreen.setSlideScreen(game.menuScreen, true);
+                        Gdx.input.setInputProcessor(game.inventoryScreen.getStage());
+                    }
+                    else {
+                        Gdx.input.setInputProcessor(gameScreen.multiplexer);
+                    }
+                    return true;
+                }
+                return super.keyDown(keycode);
+            }
+        });
+        Gdx.input.setInputProcessor(multiplexer);
     }
 
     /**
@@ -232,7 +310,7 @@ public class InventoryUI extends UI {
     /**
      * Resets the item actors
      */
-    private void removeInventoryActors() {
+    public void removeInventoryActors() {
         for (int i = 0; i < Inventory.NUM_SLOTS; i++) {
             Item item = player.inventory.getItem(i);
             if (item != null) {
@@ -500,7 +578,7 @@ public class InventoryUI extends UI {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 tooltip.setVisible(false);
-                if (!game.player.settings.muteSfx) rm.buttonclick1.play(game.player.settings.sfxVolume);
+                if (!game.player.settings.muteSfx) rm.buttonclick1.play(game.player.settings.sfxVolume * 0.3f);
                 // only equips can be enchanted
                 if (currentItem != null && currentItem.type >= 2 && currentItem.type <= 9) {
                     new Dialog("Enchant", rm.dialogSkin) {
@@ -532,7 +610,7 @@ public class InventoryUI extends UI {
         invButtons[1].addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                if (!game.player.settings.muteSfx) rm.buttonclick1.play(game.player.settings.sfxVolume);
+                if (!game.player.settings.muteSfx) rm.buttonclick1.play(game.player.settings.sfxVolume * 0.3f);
                 if (currentItem != null) {
                     new Dialog("Sell", rm.dialogSkin) {
                         {

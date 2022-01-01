@@ -1,5 +1,59 @@
+/*
+ *   Copyright (C) 2021 Yi An
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   This program is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU General Public License for more details.
+ *
+ *   You should have received a copy of the GNU General Public License
+ *   along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ *   Original project's License:
+ *
+ *   MIT License
+ *
+ *   Copyright (c) 2018 Ming Li
+ *
+ *   Permission is hereby granted, free of charge, to any person obtaining a copy
+ *   of this software and associated documentation files (the "Software"), to deal
+ *   in the Software without restriction, including without limitation the rights
+ *   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ *   copies of the Software, and to permit persons to whom the Software is
+ *   furnished to do so, subject to the following conditions:
+ *
+ *   The above copyright notice and this permission notice shall be included in all
+ *   copies or substantial portions of the Software.
+ *
+ *   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ *   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ *   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ *   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ *   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ *   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ *   SOFTWARE.
+ */
+
 package com.anyicomplex.unlucky.screen;
 
+import com.anyicomplex.unlucky.Unlucky;
+import com.anyicomplex.unlucky.entity.Player;
+import com.anyicomplex.unlucky.inventory.Inventory;
+import com.anyicomplex.unlucky.inventory.Item;
+import com.anyicomplex.unlucky.inventory.Shop;
+import com.anyicomplex.unlucky.inventory.ShopItem;
+import com.anyicomplex.unlucky.resource.ResourceManager;
+import com.anyicomplex.unlucky.resource.Util;
+import com.anyicomplex.unlucky.ui.inventory.ItemTooltip;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
+import com.badlogic.gdx.InputAdapter;
+import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.*;
@@ -8,15 +62,6 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
-import com.anyicomplex.unlucky.entity.Player;
-import com.anyicomplex.unlucky.inventory.Inventory;
-import com.anyicomplex.unlucky.inventory.Item;
-import com.anyicomplex.unlucky.inventory.Shop;
-import com.anyicomplex.unlucky.inventory.ShopItem;
-import com.anyicomplex.unlucky.Unlucky;
-import com.anyicomplex.unlucky.resource.ResourceManager;
-import com.anyicomplex.unlucky.resource.Util;
-import com.anyicomplex.unlucky.ui.inventory.ItemTooltip;
 
 /**
  * The screen for the shop UI where the player can buy/sell items
@@ -105,6 +150,26 @@ public class ShopScreen extends MenuExtensionScreen {
 
         // update labels
         gold.setText("GOLD: " + player.getGold());
+
+        InputMultiplexer multiplexer = new InputMultiplexer();
+        multiplexer.addProcessor(stage);
+        multiplexer.addProcessor(new InputAdapter() {
+            @Override
+            public boolean keyDown(int keycode) {
+                if (!clickable) return super.keyDown(keycode);
+                if (keycode == Input.Keys.ESCAPE) {
+                    if (!game.player.settings.muteSfx) rm.buttonclick0.play(game.player.settings.sfxVolume);
+                    removeInventoryActors();
+                    unselectItem();
+                    game.menuScreen.transitionIn = 1;
+                    setSlideScreen(game.menuScreen, true);
+                    Gdx.input.setInputProcessor(stage);
+                    return true;
+                }
+                return super.keyDown(keycode);
+            }
+        });
+        Gdx.input.setInputProcessor(multiplexer);
     }
 
     private void createInventoryUI() {
@@ -198,7 +263,7 @@ public class ShopScreen extends MenuExtensionScreen {
 
         final TextButton[] tabButtons = new TextButton[3];
         String[] tabStrs = new String[] { "MISC", "EQUIPS", "ACCS" };
-        ButtonGroup tabs = new ButtonGroup();
+        ButtonGroup<TextButton> tabs = new ButtonGroup<>();
         tabs.setMinCheckCount(1);
         tabs.setMaxCheckCount(1);
         for (int i = 0; i < 3; i++) {
@@ -218,6 +283,7 @@ public class ShopScreen extends MenuExtensionScreen {
         }
         shopTable.add(content).expand().fill();
         tabContents[0].setVisible(true);
+        stage.setScrollFocus(tabContents[0].getChild(0));
         tabContents[1].setVisible(false);
         tabContents[2].setVisible(false);
 
@@ -227,8 +293,9 @@ public class ShopScreen extends MenuExtensionScreen {
             tabButtons[i].addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
-                    if (!game.player.settings.muteSfx) rm.buttonclick1.play(game.player.settings.sfxVolume);
+                    if (!game.player.settings.muteSfx) rm.buttonclick1.play(game.player.settings.sfxVolume * 0.3f);
                     tabContents[index].setVisible(tabButtons[index].isChecked());
+                    stage.setScrollFocus(tabContents[index].getChild(0));
                 }
             });
         }
@@ -240,7 +307,7 @@ public class ShopScreen extends MenuExtensionScreen {
      * Creates the content in the form of item catalogs for each of the tabs
      */
     private void createTabContents() {
-        ButtonGroup itemButtonGroup = new ButtonGroup();
+        ButtonGroup<TextButton> itemButtonGroup = new ButtonGroup<>();
         itemButtonGroup.setMinCheckCount(0);
         itemButtonGroup.setMaxCheckCount(1);
 
@@ -307,7 +374,7 @@ public class ShopScreen extends MenuExtensionScreen {
                 });
 
                 int height = (int) (itemTable.getPrefHeight() + itemTable.getPrefHeight() / 2);
-                item.actor.setPosition(4, height / 2 - 5);
+                item.actor.setPosition(4, height / 2.0f - 5);
 
                 selectionContainer.add(itemGroup).padLeft(-1).padBottom(2).size(89, height).row();
             }
@@ -318,7 +385,7 @@ public class ShopScreen extends MenuExtensionScreen {
 
             ScrollPane scrollPane = new ScrollPane(selectionContainer, rm.skin);
             scrollPane.setScrollingDisabled(true, false);
-            scrollPane.setFadeScrollBars(true);
+            scrollPane.setFadeScrollBars(false);
             //scrollPane.setupFadeScrollBars(0, 0);
             scrollPane.layout();
             tabContents[i].add(scrollPane).size(108, 66).fill();
@@ -384,7 +451,7 @@ public class ShopScreen extends MenuExtensionScreen {
         // buy
         invButtons[0].addListener(new ClickListener() {
             public void clicked(InputEvent event, float x, float y) {
-                if (!game.player.settings.muteSfx) rm.buttonclick1.play(game.player.settings.sfxVolume);
+                if (!game.player.settings.muteSfx) rm.buttonclick1.play(game.player.settings.sfxVolume * 0.3f);
                 unselectItem();
                 buy();
             }
@@ -393,7 +460,7 @@ public class ShopScreen extends MenuExtensionScreen {
         invButtons[1].addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                if (!game.player.settings.muteSfx) rm.buttonclick1.play(game.player.settings.sfxVolume);
+                if (!game.player.settings.muteSfx) rm.buttonclick1.play(game.player.settings.sfxVolume * 0.3f);
                 sell();
             }
         });

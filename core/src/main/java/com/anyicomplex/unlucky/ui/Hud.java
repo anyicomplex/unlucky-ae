@@ -1,5 +1,58 @@
+/*
+ *   Copyright (C) 2021 Yi An
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   This program is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU General Public License for more details.
+ *
+ *   You should have received a copy of the GNU General Public License
+ *   along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ *   Original project's License:
+ *
+ *   MIT License
+ *
+ *   Copyright (c) 2018 Ming Li
+ *
+ *   Permission is hereby granted, free of charge, to any person obtaining a copy
+ *   of this software and associated documentation files (the "Software"), to deal
+ *   in the Software without restriction, including without limitation the rights
+ *   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ *   copies of the Software, and to permit persons to whom the Software is
+ *   furnished to do so, subject to the following conditions:
+ *
+ *   The above copyright notice and this permission notice shall be included in all
+ *   copies or substantial portions of the Software.
+ *
+ *   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ *   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ *   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ *   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ *   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ *   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ *   SOFTWARE.
+ */
+
 package com.anyicomplex.unlucky.ui;
 
+import com.anyicomplex.unlucky.Unlucky;
+import com.anyicomplex.unlucky.effects.Moving;
+import com.anyicomplex.unlucky.entity.Player;
+import com.anyicomplex.unlucky.event.EventState;
+import com.anyicomplex.unlucky.inventory.Inventory;
+import com.anyicomplex.unlucky.inventory.Item;
+import com.anyicomplex.unlucky.map.TileMap;
+import com.anyicomplex.unlucky.map.WeatherType;
+import com.anyicomplex.unlucky.resource.ResourceManager;
+import com.anyicomplex.unlucky.resource.Util;
+import com.anyicomplex.unlucky.screen.GameScreen;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Group;
@@ -10,17 +63,6 @@ import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
-import com.anyicomplex.unlucky.effects.Moving;
-import com.anyicomplex.unlucky.entity.Player;
-import com.anyicomplex.unlucky.event.EventState;
-import com.anyicomplex.unlucky.inventory.Inventory;
-import com.anyicomplex.unlucky.inventory.Item;
-import com.anyicomplex.unlucky.Unlucky;
-import com.anyicomplex.unlucky.map.TileMap;
-import com.anyicomplex.unlucky.map.WeatherType;
-import com.anyicomplex.unlucky.resource.ResourceManager;
-import com.anyicomplex.unlucky.resource.Util;
-import com.anyicomplex.unlucky.screen.GameScreen;
 
 /**
  * Handles button input and everything not in the game camera
@@ -35,7 +77,7 @@ public class Hud extends UI {
     public boolean touchDown = false;
     public int dirIndex = -1;
     // for changing the player's facing direction with a short tap like in pokemon
-    private float dirTime = 0;
+    public float dirTime = 0;
 
     // option buttons: inventoryUI and settings
     private ImageButton[] optionButtons;
@@ -85,6 +127,9 @@ public class Hud extends UI {
                 TextButton q = new TextButton("Quit", rm.dialogSkin);
                 q.getLabel().setFontScale(0.75f);
                 button(q, "quit");
+                key(Input.Keys.B, "back");
+                key(Input.Keys.S, "settings");
+                key(Input.Keys.Q, "quit");
             }
             @Override
             protected void result(Object object) {
@@ -235,9 +280,11 @@ public class Hud extends UI {
 
         handleDirPadEvents();
 
-        for (int i = 0; i < dirPad.length; i++) {
-            stage.addActor(dirPad[i]);
+        if (Unlucky.DISABLE_PAD) return;
+        for (ImageButton imageButton : dirPad) {
+            stage.addActor(imageButton);
         }
+
     }
 
     /**
@@ -293,7 +340,7 @@ public class Hud extends UI {
 
         frame = new Image(rm.skin, "textfield");
         frame.setSize(100, 60);
-        frame.setPosition(Unlucky.V_WIDTH / 2 - 50, Unlucky.V_HEIGHT / 2 - 30);
+        frame.setPosition(Unlucky.V_WIDTH / 2.0f - 50, Unlucky.V_HEIGHT / 2.0f - 30);
         deathGroup.addActor(frame);
 
         youDied = new Label("YOU DIED!", new Label.LabelStyle(rm.pixel10, Color.RED));
@@ -308,7 +355,7 @@ public class Hud extends UI {
         loss.setWrap(true);
         loss.setSize(100, 40);
         loss.setAlignment(Align.top);
-        loss.setPosition(Unlucky.V_WIDTH / 2 - 50, Unlucky.V_HEIGHT / 2 - 30);
+        loss.setPosition(Unlucky.V_WIDTH / 2.0f - 50, Unlucky.V_HEIGHT / 2.0f - 30);
         loss.setTouchable(Touchable.disabled);
         deathGroup.addActor(loss);
 
@@ -332,7 +379,7 @@ public class Hud extends UI {
         loss.setText(text);
     }
 
-    private void backToMenu() {
+    public void backToMenu() {
         game.menuScreen.transitionIn = 0;
         if (gameScreen.gameMap.weather != WeatherType.NORMAL) {
             rm.lightrain.stop(gameScreen.gameMap.soundId);
@@ -354,7 +401,7 @@ public class Hud extends UI {
         }
     }
 
-    private void loseObtained() {
+    public void loseObtained() {
         player.addGold(-gameScreen.gameMap.goldObtained);
         player.addExp(-gameScreen.gameMap.expObtained);
         if (gameScreen.gameMap.itemsObtained.size != 0) {
@@ -384,6 +431,8 @@ public class Hud extends UI {
                 getButtonTable().defaults().height(15);
                 button("Yes", "yes");
                 button("No", "no");
+                key(Input.Keys.Y, "yes");
+                key(Input.Keys.N, "no");
             }
             @Override
             protected void result(Object object) {
@@ -439,6 +488,7 @@ public class Hud extends UI {
         optionButtons[0].addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
+                if (!game.player.settings.muteSfx) rm.buttonclick0.play(game.player.settings.sfxVolume);
                 toggle(false);
                 gameScreen.setCurrentEvent(EventState.INVENTORY);
                 gameScreen.getGame().inventoryUI.init(false, null);
@@ -450,6 +500,7 @@ public class Hud extends UI {
         optionButtons[1].addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
+                if (!game.player.settings.muteSfx) rm.buttonclick0.play(game.player.settings.sfxVolume);
                 shade.setVisible(true);
                 toggle(false);
 

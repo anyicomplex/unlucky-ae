@@ -39,21 +39,20 @@
  *   SOFTWARE.
  */
 
-package com.anyicomplex.unlucky.event;
+package com.anyicomplex.unlucky.gwt;
 
-/**
- * Different states for events such as walking, battling, picking up items
- *
- * @author Ming Li
- */
-public enum EventState {
-    NONE,
-    MOVING,
-    BATTLING,
-    TRANSITION,
-    LEVEL_UP,
-    INVENTORY,
-    TILE_EVENT,
-    DEATH,
-    PAUSE
+import com.anyicomplex.unlucky.util.OpenURIHandler;
+
+public class GwtOpenURIHandler implements OpenURIHandler {
+
+    @Override
+    public void from(String uri) {
+        nOpenURL(uri);
+    }
+
+    private native void nOpenURL(String url) /*-{
+        var jsUrl = url;
+        $wnd.location.href = jsUrl;
+    }-*/;
+
 }

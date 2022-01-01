@@ -1,18 +1,63 @@
+/*
+ *   Copyright (C) 2021 Yi An
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   This program is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU General Public License for more details.
+ *
+ *   You should have received a copy of the GNU General Public License
+ *   along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ *   Original project's License:
+ *
+ *   MIT License
+ *
+ *   Copyright (c) 2018 Ming Li
+ *
+ *   Permission is hereby granted, free of charge, to any person obtaining a copy
+ *   of this software and associated documentation files (the "Software"), to deal
+ *   in the Software without restriction, including without limitation the rights
+ *   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ *   copies of the Software, and to permit persons to whom the Software is
+ *   furnished to do so, subject to the following conditions:
+ *
+ *   The above copyright notice and this permission notice shall be included in all
+ *   copies or substantial portions of the Software.
+ *
+ *   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ *   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ *   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ *   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ *   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ *   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ *   SOFTWARE.
+ */
+
 package com.anyicomplex.unlucky;
 
 import com.anyicomplex.unlucky.entity.Player;
 import com.anyicomplex.unlucky.parallax.Background;
 import com.anyicomplex.unlucky.resource.ResourceManager;
 import com.anyicomplex.unlucky.save.Save;
+import com.anyicomplex.unlucky.save.Settings;
 import com.anyicomplex.unlucky.screen.*;
 import com.anyicomplex.unlucky.screen.game.VictoryScreen;
 import com.anyicomplex.unlucky.ui.inventory.InventoryUI;
+import com.anyicomplex.unlucky.util.Disposer;
+import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Cursor;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.profiling.GLProfiler;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 
@@ -25,17 +70,30 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
  */
 public class Unlucky extends Game {
 
-    public static final String VERSION = "1.0";
-    public static final String TITLE = "Unlucky Version " + VERSION;
+    public volatile static String APP_NAME;
+    public volatile static String VERSION;
+    public volatile static int VERSION_CODE;
+    public volatile static String VERSION_CODE_STRING;
+    public volatile static String TITLE;
+
+    public volatile static String STORAGE_BASE_PATH;
+    public volatile static String STORAGE_RELATIVE_PATH;
+    public volatile static String STORAGE_ABSOLUTE_PATH;
 
     // Links
     public static final String GITHUB = "https://github.com/mingli1/Unlucky";
+    public static final String GITHUB2 = "https://github.com/anyicomplex/unlucky-ae";
     public static final String YOUTUBE = "https://www.youtube.com/channel/UC-oA-vkeYrgEy23Sq2PLC8w/videos?shelf_id=0&sort=dd&view=0";
 
     // Desktop screen dimensions
     public static final int V_WIDTH = 200;
     public static final int V_HEIGHT = 120;
+    public static final int V_MIN_SCALE = 3;
     public static final int V_SCALE = 6;
+
+    public volatile static boolean DISABLE_PAD = false;
+    public volatile static boolean DISABLE_FULLSCREEN = true;
+    public volatile static boolean DISABLE_CURSOR = true;
 
     // Rendering utilities
     public SpriteBatch batch;
@@ -48,6 +106,7 @@ public class Unlucky extends Game {
 
     // Game save
     public Save save;
+    public Settings preLoadSettings;
 
     // Screens
     public MenuScreen menuScreen;
@@ -69,12 +128,19 @@ public class Unlucky extends Game {
     public Label fps;
 
 	public void create() {
+
         batch = new SpriteBatch();
         rm = new ResourceManager();
         player = new Player("player", rm);
 
-        save = new Save(player, "save.json");
+        save = new Save(player, "save");
         save.load(rm);
+        if (preLoadSettings != null) player.settings = preLoadSettings;
+
+        if (Gdx.app.getType() == Application.ApplicationType.WebGL) player.settings.fullscreen = false;
+        if (player.settings.fullscreen) {
+            fullscreen();
+        }
 
         // debugging
         fps = new Label("", new Label.LabelStyle(rm.pixel10, Color.RED));
@@ -110,11 +176,33 @@ public class Unlucky extends Game {
             (OrthographicCamera) menuScreen.getStage().getCamera(), new Vector2(0.3f, 0));
         menuBackground[2].setVector(60, 0);
 
-        // profiler
-        // GLProfiler.enable();
-
         this.setScreen(menuScreen);
 	}
+
+    public void setCustomCursor() {
+        if (!DISABLE_CURSOR) {
+            Pixmap cursorImage = new Pixmap(Gdx.files.internal("ui/pointer.png"));
+            Gdx.graphics.setCursor(Gdx.graphics.newCursor(cursorImage,
+                    cursorImage.getWidth() / 2, cursorImage.getHeight() / 2));
+            Disposer.dispose(cursorImage);
+        }
+    }
+
+    public void setSystemCursor() {
+        if (!DISABLE_CURSOR) {
+            Gdx.graphics.setSystemCursor(Cursor.SystemCursor.Arrow);
+        }
+    }
+
+    public void fullscreen() {
+        Gdx.graphics.setFullscreenMode(Gdx.graphics.getDisplayMode());
+        setCustomCursor();
+    }
+
+    public void windowedMode() {
+        Gdx.graphics.setWindowedMode(player.settings.width, player.settings.height);
+        setSystemCursor();
+    }
 
 	public void render() {
         fps.setText(Gdx.graphics.getFramesPerSecond() + " fps");
@@ -122,38 +210,20 @@ public class Unlucky extends Game {
     }
 
 	public void dispose() {
-        batch.dispose();
+        Disposer.dispose(batch);
         super.dispose();
 
-        rm.dispose();
-        menuScreen.dispose();
-        gameScreen.dispose();
-        worldSelectScreen.dispose();
-        levelSelectScreen.dispose();
-        inventoryScreen.dispose();
-        shopScreen.dispose();
-        statisticsScreen.dispose();
-        inventoryUI.dispose();
-        victoryScreen.dispose();
-        settingsScreen.dispose();
+        Disposer.dispose(menuScreen, gameScreen, worldSelectScreen,
+                levelSelectScreen, inventoryScreen, shopScreen, statisticsScreen,
+                inventoryUI, victoryScreen, settingsScreen, rm);
 
-        // GLProfiler.disable();
 	}
 
-    /**
-     * Logs profile for SpriteBatch calls
-     */
-    /*
-	public void profile(String source) {
-        System.out.println("Profiling " + source + "..." + "\n" +
-            "  Drawcalls: " + GLProfiler.drawCalls +
-            ", Calls: " + GLProfiler.calls +
-            ", TextureBindings: " + GLProfiler.textureBindings +
-            ", ShaderSwitches:  " + GLProfiler.shaderSwitches +
-            " vertexCount: " + GLProfiler.vertexCount.value);
-        GLProfiler.reset();
+    @Override
+    public void resize(int width, int height) {
+        if (!Unlucky.DISABLE_FULLSCREEN) player.settings.fullscreen = Gdx.graphics.isFullscreen();
+        super.resize(width, height);
+        if (getScreen() != settingsScreen) settingsScreen.resize(width, height);
     }
-
-     */
 
 }
