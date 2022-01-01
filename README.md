@@ -1,6 +1,7 @@
 # Unlucky AE
 
-[![Build status](https://img.shields.io/github/workflow/status/anyicomplex/unlucky-ae/Java%20CI%20with%20Gradle?logo=github)](https://github.com/libgdx/libgdx/actions?query=workflow%3A%22Build+Snapshot%22)
+[![Java CI with Gradle](https://github.com/anyicomplex/unlucky-ae/actions/workflows/gradle.yml/badge.svg?branch=master&event=push)](https://github.com/anyicomplex/unlucky-ae/actions/workflows/gradle.yml)
+[![Android CI](https://github.com/anyicomplex/unlucky-ae/actions/workflows/android.yml/badge.svg?branch=master&event=push)](https://github.com/anyicomplex/unlucky-ae/actions/workflows/android.yml)
 [![Discord](https://img.shields.io/discord/905289342057082910?logo=discord)](https://discord.gg/zKTXUdBWAa)
 
 Unlucky AE is a fork of [Unlucky](https://github.com/mingli1/Unlucky), just for bug fixes.  
