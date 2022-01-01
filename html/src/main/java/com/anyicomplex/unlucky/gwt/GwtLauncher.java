@@ -1,5 +1,6 @@
 package com.anyicomplex.unlucky.gwt;
 
+import com.anyicomplex.unlucky.Unlucky;
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.backends.gwt.GwtApplication;
 import com.badlogic.gdx.backends.gwt.GwtApplicationConfiguration;

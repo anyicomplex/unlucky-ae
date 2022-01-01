@@ -1,7 +1,6 @@
 package com.anyicomplex.unlucky.lwjgl3;
 
 import com.anyicomplex.unlucky.Unlucky;
-import com.badlogic.gdx.Files;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
 
