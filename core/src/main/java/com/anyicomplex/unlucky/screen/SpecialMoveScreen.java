@@ -242,7 +242,7 @@ public class SpecialMoveScreen extends MenuExtensionScreen {
             @Override
             public boolean keyDown(int keycode) {
                 if (!clickable) return super.keyDown(keycode);
-                if (keycode == Input.Keys.ESCAPE) {
+                if (keycode == Input.Keys.ESCAPE || keycode == Input.Keys.BACK) {
                     unselectSlot();
                     if (!game.player.settings.muteSfx) rm.buttonclick0.play(game.player.settings.sfxVolume);
                     smoveButtons[0].setStyle(addButtonStyle[1]);

@@ -177,7 +177,8 @@ public class Unlucky extends Game {
             (OrthographicCamera) menuScreen.getStage().getCamera(), new Vector2(0.3f, 0));
         menuBackground[2].setVector(60, 0);
 
-        this.setScreen(menuScreen);
+        if (Gdx.app.getType() == Application.ApplicationType.WebGL) setScreen(new GwtScreen(this, rm));
+        else setScreen(menuScreen);
 	}
 
     public void setCustomCursor() {

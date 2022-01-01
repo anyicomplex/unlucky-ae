@@ -102,6 +102,7 @@ public class WorldSelectScreen extends SelectScreen {
             public boolean keyDown(int keycode) {
                 if (!clickable) return super.keyDown(keycode);
                 switch (keycode) {
+                    case Input.Keys.BACK:
                     case Input.Keys.ESCAPE:
                     if (!game.player.settings.muteSfx) rm.buttonclick0.play(game.player.settings.sfxVolume);
                     game.menuScreen.transitionIn = 0;

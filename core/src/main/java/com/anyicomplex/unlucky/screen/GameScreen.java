@@ -159,6 +159,7 @@ public class GameScreen extends AbstractScreen {
                             case Input.Keys.M:
                                 battleUIHandler.moveUI.performSpecialMove();
                                 break;
+                            case Input.Keys.BACK:
                             case Input.Keys.ESCAPE:
                                 battleUIHandler.moveUI.performEscape();
                                 break;
@@ -170,6 +171,7 @@ public class GameScreen extends AbstractScreen {
                         return true;
                     case MOVING:
                         switch (keycode) {
+                            case Input.Keys.BACK:
                             case Input.Keys.ESCAPE:
                                 if (!game.player.settings.muteSfx) rm.buttonclick0.play(game.player.settings.sfxVolume);
                                 hud.shade.setVisible(true);

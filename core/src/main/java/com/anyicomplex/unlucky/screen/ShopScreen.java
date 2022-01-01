@@ -157,7 +157,7 @@ public class ShopScreen extends MenuExtensionScreen {
             @Override
             public boolean keyDown(int keycode) {
                 if (!clickable) return super.keyDown(keycode);
-                if (keycode == Input.Keys.ESCAPE) {
+                if (keycode == Input.Keys.ESCAPE || keycode == Input.Keys.BACK) {
                     if (!game.player.settings.muteSfx) rm.buttonclick0.play(game.player.settings.sfxVolume);
                     removeInventoryActors();
                     unselectItem();

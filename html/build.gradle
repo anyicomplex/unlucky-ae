@@ -85,6 +85,7 @@ var outputPath = "../docs/"
 
 task dist(dependsOn: [clean, compileGwt]) {
     doLast {
+		delete outputPath
 		file(outputPath).mkdirs()
 		copy {
 			from("build/gwt/out"){

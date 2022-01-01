@@ -262,7 +262,7 @@ public class InventoryUI extends UI {
                 else {
                     if (ui.moving.shouldStart) return super.keyDown(keycode);
                 }
-                if (keycode == Input.Keys.ESCAPE) {
+                if (keycode == Input.Keys.ESCAPE || keycode == Input.Keys.BACK) {
                     end();
                     if (!game.player.settings.muteSfx) rm.buttonclick0.play(game.player.settings.sfxVolume);
                     if (inMenu) {

@@ -175,6 +175,7 @@ public class MenuScreen extends MenuExtensionScreen {
                         if (!game.player.settings.muteSfx) rm.buttonclick0.play(game.player.settings.sfxVolume);
                         credits.setVisible(true);
                         return true;
+                    case Input.Keys.BACK:
                     case Input.Keys.ESCAPE:
                     if (credits.isVisible()) {
                         if (!game.player.settings.muteSfx) rm.buttonclick0.play(game.player.settings.sfxVolume);

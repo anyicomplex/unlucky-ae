@@ -224,6 +224,7 @@ public class VictoryScreen extends AbstractScreen {
                             setFadeScreen(game.levelSelectScreen);
                         }
                         return true;
+                    case Input.Keys.BACK:
                     case Input.Keys.ESCAPE:
                         for (Item item : gameMap.itemsObtained) item.actor.remove();
                         game.menuScreen.transitionIn = 0;
