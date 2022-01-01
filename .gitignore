@@ -21,6 +21,7 @@ com_crashlytics_export_strings.xml
 
 ## GWT:
 war/
+html/war
 html/war/gwt_bree/
 html/gwt-unitCache/
 .apt_generated/
