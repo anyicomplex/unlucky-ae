@@ -20,7 +20,8 @@ The player ventures and battles monsters in maps with various themes. Currently 
 The battle system is based on turn-based mechanics. The player is given four randomly generated moves with each color corresponding to a different type of move. The player also has access to special moves that they can choose in the menu. Special moves give bonus effects to the player's attacks or affects the enemy. The player also has an option to run from the battle at a very low chance of success.
 
 ## Downloads
-This fork's releases can be found on [Github Releases](https://github.com/anyicomplex/unlucky/releases).
+This fork's releases can be found on [GitHub Releases](https://github.com/anyicomplex/unlucky/releases).  
+You can also play this fork online at [GitHub Page](https://anyicomplex.github.io/unlucky-ae).
 
 Official releases for Desktop are found on [this](https://github.com/mingli1/Unlucky/releases). It is in a runnable .jar format so you must have JRE installed.
 Note: running the official game on desktop will create a `save.json` file in the same directory as the game. The game must be run in the same directory as the save.json to work and load your progress.

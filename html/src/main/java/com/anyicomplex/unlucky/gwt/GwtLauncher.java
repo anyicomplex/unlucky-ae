@@ -47,6 +47,8 @@ import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.backends.gwt.GwtApplication;
 import com.badlogic.gdx.backends.gwt.GwtApplicationConfiguration;
 import com.badlogic.gdx.backends.gwt.GwtGraphics;
+import com.badlogic.gdx.backends.gwt.preloader.Preloader;
+import com.google.gwt.core.client.GWT;
 
 /** Launches the GWT application. */
 public class GwtLauncher extends GwtApplication {
@@ -58,6 +60,7 @@ public class GwtLauncher extends GwtApplication {
 			cfg.padHorizontal = 0;
 			cfg.fullscreenOrientation = GwtGraphics.OrientationLockType.LANDSCAPE;
 			cfg.antialiasing = false;
+			cfg.openURLInNewWindow = true;
 			return cfg;
 			// If you want a fixed size application, comment out the above resizable section,
 			// and uncomment below:
@@ -80,5 +83,10 @@ public class GwtLauncher extends GwtApplication {
 			PlatformSupport.setHandler(new GwtPlatformSupport(unlucky));
 			return unlucky;
 		}
+
+	@Override
+	public Preloader.PreloaderCallback getPreloaderCallback() {
+		return createPreloaderPanel(GWT.getHostPageBaseURL() + "logo.png");
+	}
 
 }
