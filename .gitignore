@@ -19,6 +19,9 @@ android/gen/
 local.properties
 com_crashlytics_export_strings.xml
 
+android/libs
+android/release
+
 ## GWT:
 war/
 html/war

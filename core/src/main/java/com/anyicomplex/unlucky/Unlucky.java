@@ -227,7 +227,7 @@ public class Unlucky extends Game {
     public void resize(int width, int height) {
         if (!Unlucky.DISABLE_FULLSCREEN) player.settings.fullscreen = isFullscreen();
         super.resize(width, height);
-        if (getScreen() != settingsScreen) settingsScreen.resize(width, height);
+        settingsScreen.performResize(width, height);
     }
 
 }

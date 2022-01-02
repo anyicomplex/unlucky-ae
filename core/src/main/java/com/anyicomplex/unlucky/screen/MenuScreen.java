@@ -133,7 +133,7 @@ public class MenuScreen extends MenuExtensionScreen {
 
         // menu music
         rm.menuTheme.setLooping(true);
-        rm.menuTheme.play();
+        // rm.menuTheme.play();
     }
 
     @Override

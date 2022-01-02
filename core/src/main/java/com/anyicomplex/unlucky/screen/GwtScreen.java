@@ -83,22 +83,24 @@ public class GwtScreen extends AbstractScreen {
         Gdx.input.setInputProcessor(new InputAdapter() {
             @Override
             public boolean keyDown(int keycode) {
-                game.setSystemCursor();
-                game.setScreen(game.menuScreen);
-                rm.menuTheme.play();
-                dispose();
+                performClick();
                 return true;
             }
 
             @Override
             public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-                game.setSystemCursor();
-                game.setScreen(game.menuScreen);
-                rm.menuTheme.play();
-                dispose();
+                performClick();
                 return true;
             }
         });
+    }
+
+    private void performClick() {
+        rm.menuTheme.play();
+        if (!game.player.settings.muteSfx) rm.buttonclick0.play(game.player.settings.sfxVolume);
+        game.setSystemCursor();
+        game.setScreen(game.menuScreen);
+        dispose();
     }
 
     @Override

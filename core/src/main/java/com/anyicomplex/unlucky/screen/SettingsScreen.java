@@ -295,13 +295,10 @@ public class SettingsScreen extends MenuExtensionScreen {
         });
     }
 
-    @Override
-    public void resize(int width, int height) {
-        super.resize(width, height);
+    public void performResize(int width, int height) {
         if (Unlucky.DISABLE_FULLSCREEN) return;
         if (fullscreenClicked) {
             fullscreenClicked = false;
-            shouldCheckFullscreen = true;
         }
         else {
             if (!game.player.settings.fullscreen && fullscreen.isChecked()) {
