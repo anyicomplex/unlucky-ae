@@ -9,8 +9,8 @@ This project's name meant **Unlucky (Anyi's Edition)**.
 
 Unlucky is a 2D RPG Game powered by Java & libGDX. Based on RNG (Random Number Generator) with a turn-based battle system. RNG is usually frowned upon in games, but this game's entire theme is RNG. Everything from attacks in battle to item enchanting to movement is based on RNG. 
 <div>
-    <img width="400px" height="240px"  src="https://user-images.githubusercontent.com/29984767/44676899-856d7600-aa02-11e8-82ca-897e3ca45092.gif" alt="">
-    <img width="400px" height="240px"  src="https://user-images.githubusercontent.com/29984767/44678123-9e2b5b00-aa05-11e8-93ab-d9d0c693ddfa.gif" alt="">
+    <img width="400px" height="240px"  src="res/screenshot0.png" alt="">
+    <img width="400px" height="240px"  src="res/video0.gif" alt="">
 </div>
 
 ## About
@@ -47,17 +47,17 @@ Official project is licensed under the [MIT License](https://github.com/anyicomp
 
 ## Screenshots
 <div>
-    <img width="400px" height="240px" src="https://user-images.githubusercontent.com/29984767/42198355-8515a9ee-7e55-11e8-9c5a-9b85f8211ac4.PNG" alt="">
-    <img width="400px" height="240px" src="https://user-images.githubusercontent.com/29984767/42197174-8c740a06-7e4f-11e8-9280-21c1850ceb48.PNG" alt="">
+    <img width="400px" height="240px" src="res/screenshot1.png" alt="">
+    <img width="400px" height="240px" src="res/screenshot2.png" alt="">
 </div>
 <div>
-    <img width="400px" height="240px" src="https://user-images.githubusercontent.com/29984767/42197176-912aed08-7e4f-11e8-8754-b4889dfb540f.PNG" alt="">
-    <img width="400px" height="240px" src="https://user-images.githubusercontent.com/29984767/42197178-932f6f20-7e4f-11e8-9c49-6e4108ee0c26.PNG" alt="">
+    <img width="400px" height="240px" src="res/screenshot3.png" alt="">
+    <img width="400px" height="240px" src="res/screenshot4.png" alt="">
 </div>
 <div>
-    <img width="400px" height="240px" src="https://user-images.githubusercontent.com/29984767/42197185-97c8b802-7e4f-11e8-879d-605d42c9260e.PNG" alt="">
-    <img width="400px" height="240px" src="https://user-images.githubusercontent.com/29984767/42197189-9b425a06-7e4f-11e8-8e76-d7c3de9c2a28.PNG" alt="">
+    <img width="400px" height="240px" src="res/screenshot5.png" alt="">
+    <img width="400px" height="240px" src="res/screenshot6.png" alt="">
 </div>
 <div>
-    <img width="400px" height="240px" src="https://user-images.githubusercontent.com/29984767/42197192-9db252c8-7e4f-11e8-80c5-4812fa018eae.PNG" alt="">
+    <img width="400px" height="240px" src="res/screenshot7.png" alt="">
 </div>
