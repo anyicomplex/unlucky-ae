@@ -18,7 +18,7 @@ dependencies {
 	implementation project(':core')
 }
 
-ext.jarBaseName = appName.replaceAll(" ", "-").toLowerCase();
+ext.jarBaseName = appName.replaceAll(" ", "-").toLowerCase()
 
 def os = System.properties['os.name'].toLowerCase()
 
