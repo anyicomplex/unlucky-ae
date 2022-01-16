@@ -4,6 +4,8 @@
 [![Android CI](https://github.com/anyicomplex/unlucky-ae/actions/workflows/android.yml/badge.svg?branch=master&event=push)](https://github.com/anyicomplex/unlucky-ae/actions/workflows/android.yml)
 [![Discord](https://img.shields.io/discord/905289342057082910?logo=discord)](https://discord.gg/zKTXUdBWAa)
 
+Unlucky AE now supports [GraalVM](https://www.graalvm.org/) native-image!
+
 Unlucky AE is a fork of [Unlucky](https://github.com/mingli1/Unlucky), just for bug fixes.  
 This project's name meant **Unlucky (Anyi's Edition)**.
 
@@ -20,7 +22,7 @@ The player ventures and battles monsters in maps with various themes. Currently 
 The battle system is based on turn-based mechanics. The player is given four randomly generated moves with each color corresponding to a different type of move. The player also has access to special moves that they can choose in the menu. Special moves give bonus effects to the player's attacks or affects the enemy. The player also has an option to run from the battle at a very low chance of success.
 
 ## Downloads
-This fork's releases can be found on [GitHub Releases](https://github.com/anyicomplex/unlucky/releases).  
+This fork's releases can be found on [GitHub Releases](https://github.com/anyicomplex/unlucky-ae/releases).  
 You can also play this fork online at [GitHub Page](https://anyicomplex.github.io/unlucky-ae).
 
 Official releases for Desktop are found on [this](https://github.com/mingli1/Unlucky/releases). It is in a runnable .jar format so you must have JRE installed.

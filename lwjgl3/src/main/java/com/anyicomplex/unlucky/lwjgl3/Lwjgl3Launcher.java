@@ -1,5 +1,6 @@
 package com.anyicomplex.unlucky.lwjgl3;
 
+import com.anyicomplex.gdx.lwjgl3.GraalHelper;
 import com.anyicomplex.unlucky.Unlucky;
 import com.anyicomplex.unlucky.save.PlayerAccessor;
 import com.anyicomplex.unlucky.save.Settings;
@@ -18,12 +19,19 @@ import java.io.File;
 /** Launches the desktop (LWJGL3) application. */
 public class Lwjgl3Launcher {
 	public static void main(String[] args) {
-		createApplication();
+		GraalHelper.setupSharedLibraryPath();
+		Lwjgl3Application app = createApplication();
+
+		// Do what shutdown hooks should do due to GraalVM native-image does not support shutdown hook
+		Unlucky unlucky = (Unlucky) app.getApplicationListener();
+		if (unlucky.player.inMap) {
+			unlucky.gameScreen.hud.loseObtained();
+			unlucky.player.setHp(unlucky.player.getMaxHp());
+		}
+		unlucky.save.save();
 	}
 
 	private static Lwjgl3Application createApplication() {
-
-		SingleInstanceLock.exitIfOtherInstancesRunning(Lwjgl3Launcher.class.getCanonicalName());
 
 		Unlucky.APP_NAME = Lwjgl3Launcher.class.getPackage().getSpecificationTitle();
 		Unlucky.VERSION = Lwjgl3Launcher.class.getPackage().getSpecificationVersion();
@@ -156,6 +164,7 @@ public class Lwjgl3Launcher {
 			@Override
 			public void refreshRequested() {}
 		});
+		/*
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			@Override
 			public void run() {
@@ -166,6 +175,7 @@ public class Lwjgl3Launcher {
 				unlucky.save.save();
 			}
 		});
+		 */
 		return new Lwjgl3Application(unlucky, configuration);
 	}
 

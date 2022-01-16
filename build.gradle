@@ -28,8 +28,8 @@ configure(subprojects - project(':android')) {
 subprojects {
 	ext {
 		appName = "Unlucky AE"
-		appVersion = '1.1.0'
-		appVersionCode = 10
+		appVersion = '1.1.1'
+		appVersionCode = 11
 		appSourceCompatibility = '1.8'
 	}
 	version = appVersion
