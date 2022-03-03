@@ -2,7 +2,6 @@
 
 [![Java CI with Gradle](https://github.com/anyicomplex/unlucky-ae/actions/workflows/gradle.yml/badge.svg?branch=master&event=push)](https://github.com/anyicomplex/unlucky-ae/actions/workflows/gradle.yml)
 [![Android CI](https://github.com/anyicomplex/unlucky-ae/actions/workflows/android.yml/badge.svg?branch=master&event=push)](https://github.com/anyicomplex/unlucky-ae/actions/workflows/android.yml)
-[![Discord](https://img.shields.io/discord/905289342057082910?logo=discord)](https://discord.gg/zKTXUdBWAa)
 
 Unlucky AE now supports [GraalVM](https://www.graalvm.org/) native-image!
 
